@@ -3,8 +3,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.authentication import SessionAuthentication
 from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics
+
 
 from api_carregamento.serializers import UserSerializer, GroupSerializer
 from django.views.decorators.csrf import csrf_exempt
@@ -14,30 +18,36 @@ from api_carregamento.serializers import CarregamentoSerializer
 
 from oauth2_provider.views.generic import ProtectedResourceView
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
-
+#@login_required(login_url='/admin')
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-
+#@login_required(login_url='/admin')
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+#@login_required(login_url='admin/')
 class CarregamentoLista(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    #permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = Carregamento.objects.all()
     serializer_class = CarregamentoSerializer
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+#@login_required(login_url='/admin')
 class CarregamentoDetalhe(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,
                       IsOwnerOrReadOnly]
     queryset = Carregamento.objects.all()
     serializer_class = CarregamentoSerializer
 
+#@login_required(login_url='/admin')
 class ApiEndpoint(ProtectedResourceView):
     def get(self, request, *args, **kwargs):
         return HttpResponse('Hello, OAuth2!')

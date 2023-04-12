@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-8g$6jmx_$!_0l)47k__!4flh&)y00!t=#e_0#4r&hn$^mzvxx8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.1.78', 'api.projeart.ind.br']
 
 
 # Application definition
@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api_carregamento',
-    'usuarios',
+
     'rest_framework.authtoken',
     'oauth2_provider',
     'corsheaders',
@@ -93,7 +93,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        #'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ]
 
