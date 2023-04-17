@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from api_carregamento.models import Carregamento
+from api_carregamento.models import Carregamento, Romaneio
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -21,24 +21,7 @@ class CarregamentoSerializer(serializers.ModelSerializer):
         owner = serializers.ReadOnlyField(source='owner.username')
         fields = ['id', 'owner','nome', 'carregamento', 'pecas']
 
-# class SnippetSerializer(serializers.Serializer):
-#     id = serializers.IntegerField(read_only=True)
-#     nome = serializers.CharField(max_length=100, blank=True, default='')
-#     carregamento = serializers.CharField(max_length=100, blank=True, default='')
-#     pecas = serializers.CharField(max_length=100, blank=True, default='')
-
-#     def create(self, validated_data):
-#         """
-#         Create and return a new `Snippet` instance, given the validated data.
-#         """
-#         return Carregamento.objects.create(**validated_data)
-
-#     def update(self, instance, validated_data):
-#         """
-#         Update and return an existing `Snippet` instance, given the validated data.
-#         """
-#         instance.nome = validated_data.get('nome', instance.nome)
-#         instance.carregamento = validated_data.get('carregamento', instance.carregamento)
-#         instance.pecas = validated_data.get('pecas', instance.pecas)
-#         instance.save()
-#         return instance
+class RomaneioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Romaneio
+        fields = ['usuario', 'nome_motorista','placa_carro', 'data_inicio', 'data_final','id_status']

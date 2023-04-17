@@ -9,3 +9,15 @@ class Carregamento(models.Model):
 
     class Meta:
         ordering = ['data']
+
+class Romaneio(models.Model):
+    usuario = models.CharField(max_length=100, blank=True, default='')
+    nome_motorista = models.CharField(max_length=100, blank=True, default='')
+    placa_carro = models.CharField(max_length=100, blank=True, default='')
+    data_inicio = models.DateTimeField(auto_now_add=False)
+    data_final = models.DateTimeField(auto_now_add=False)
+    id_status = models.CharField(max_length=100, blank=True, default='')
+    class Meta:
+        managed = False
+        db_table = 'TbRomaneio'
+

@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-8g$6jmx_$!_0l)47k__!4flh&)y00!t=#e_0#4r&hn$^mzvxx8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.78', 'api.projeart.ind.br']
+ALLOWED_HOSTS = ['192.168.1.78', 'api.projeart.ind.br', 'localhost', '*']
 
 
 # Application definition
@@ -73,13 +73,27 @@ WSGI_APPLICATION = 'api_projeart.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+DATABASES= {
+    'default':{
+        'ENGINE':'mssql',#'sql_server.pyodbc',
+        'NAME':'ProjeartCustom',
+        'USER':'arthur.almeida',
+        'PASSWORD':'UqoLGO0zLG5GpLaWe2PM',
+        'HOST':'54.232.251.153',
+        'PORT':'1433', #1433
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS':{
+            'driver':'ODBC Driver 17 for SQL Server'
+        }
     }
 }
+
+#DATABASES = {
+ #   'default': {
+  #      'ENGINE': 'django.db.backends.sqlite3',
+   #     'NAME': BASE_DIR / 'db.sqlite3',
+    #}
+#}
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,

@@ -9,12 +9,12 @@ from rest_framework.authentication import SessionAuthentication
 from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics
 
-
+from json import loads, dumps
 from api_carregamento.serializers import UserSerializer, GroupSerializer
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
-from api_carregamento.models import Carregamento
-from api_carregamento.serializers import CarregamentoSerializer
+from api_carregamento.models import Carregamento, Romaneio
+from api_carregamento.serializers import CarregamentoSerializer, RomaneioSerializer
 
 from oauth2_provider.views.generic import ProtectedResourceView
 from django.http import HttpResponse
@@ -40,7 +40,28 @@ class CarregamentoLista(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-#@login_required(login_url='/admin')
+class RomaneioLista(generics.ListCreateAPIView):
+    #permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Romaneio.objects.all()
+    serializer_class = RomaneioSerializer
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+import dw_connect
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+class ObrasLista(generics.ListCreateAPIView):
+    
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    dw_connect.query_obras()
+    #queryset = get_queryset()
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
 class CarregamentoDetalhe(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,
                       IsOwnerOrReadOnly]
@@ -51,18 +72,40 @@ class CarregamentoDetalhe(generics.RetrieveUpdateDestroyAPIView):
 class ApiEndpoint(ProtectedResourceView):
     def get(self, request, *args, **kwargs):
         return HttpResponse('Hello, OAuth2!')
-    
-# @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-# def carregamento_lista(request, format=None):
-#     """
-#     List all code snippets, or create a new snippet.
-#     """
-#     if request.method == 'GET':
-#         carregamento = Carregamento.objects.all()
-#         serializer = CarregamentoSerializer(carregamento, many=True)
-#         return Response(serializer.data)
 
+import dw_connect    
+@api_view(['GET'])
+#@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([IsAuthenticated])
+def obras_lista(request, format=None):
+
+    if request.method == 'GET':
+        obras = dw_connect.query_obras()
+        #obras.replace("\",'')
+        return Response(obras)
+
+@api_view(['GET'])
+#@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([IsAuthenticated])
+def trechos_lista(request, format=None):
+
+    obra_id = request.GET['obra_id']
+    if request.method == 'GET':
+        trechos = dw_connect.query_trechos(obra_id)
+        
+        return Response(trechos)
+
+@api_view(['GET'])
+#@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([IsAuthenticated])
+def peca_detalhe(request, format=None):
+
+    peca_id = request.GET['ordem_ou_nome']
+
+    if request.method == 'GET':
+        peca = dw_connect.query_get_peca(peca_id)
+        
+        return Response(peca)
 #     elif request.method == 'POST':
 #         data = JSONParser().parse(request)
 #         serializer = CarregamentoSerializer(data=data)
