@@ -10,7 +10,7 @@ def connect_projeart():
     user = os.getenv('USER_DW')
     password = os.getenv('PASSWORD')
     db = os.getenv('DBPROJEART')
-    cnxn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER='+server+';DATABASE='+db+';UID='+user+';PWD='+ password, TrustServerCertificate='Yes')
+    cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+db+';UID='+user+';PWD='+ password, TrustServerCertificate='Yes')
     cursor = cnxn.cursor()
     return cursor
 
@@ -19,7 +19,7 @@ def connect_dw():
     user = os.getenv('USER_DW')
     password = os.getenv('PASSWORD')
     db = os.getenv('DBDW')
-    cnxn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER='+server+';DATABASE='+db+';UID='+user+';PWD='+ password, TrustServerCertificate='Yes')
+    cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+db+';UID='+user+';PWD='+ password, TrustServerCertificate='Yes')
     cursor = cnxn.cursor()
     return cursor
 import numpy as np
