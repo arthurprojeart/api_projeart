@@ -66,8 +66,12 @@ def query_trechos(obra_id):
     return df_obras
 
 def query_get_peca(ordem_ou_nome):
-    #if type(ordem_ou_nome) is int:
-    ordem_ou_nome = str(ordem_ou_nome)
+    if type(ordem_ou_nome) is int:
+        ordem = ordem_ou_nome
+        nome = ''
+    else:
+        nome = ordem_ou_nome
+        ordem = 0
     cursor = connect_projeart()
     cursor.execute(f'''
         SELECT 
@@ -109,7 +113,7 @@ LEFT JOIN TbOpl Tre (NOLOCK) on  Tre.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef
 WHERE
 	Lot.TpLotSta = 1 -- Apenas em Aberto
 	And Lot.CdObj = 40766 --OF - PROJEART
-    And (Lot.CdLot = {ordem_ou_nome} or ObjPrd.NmObj like '%{ordem_ou_nome}%')
+    And (Lot.CdLot = {ordem} or ObjPrd.NmObj like '%{nome}%')
 
 --and Obj.CdObj003 = 39385 -- Apenas COMPONENTES
 
@@ -139,7 +143,7 @@ GROUP BY
     peca_json = df_peca.to_json(orient="records", force_ascii=False)
 
     return peca_json
-#print(query_get_peca('D7-3-01'))
+
 def query_post_romaneio(romaneio):
     return
 

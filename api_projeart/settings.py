@@ -20,7 +20,7 @@ ALLOWED_HOSTS = ['192.168.1.78', 'api.projeart.ind.br', 'localhost', '*']
 
 INSTALLED_APPS = [
     'rest_framework_simplejwt',
-
+    'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
