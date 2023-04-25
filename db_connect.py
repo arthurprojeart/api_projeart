@@ -32,3 +32,12 @@ def query_delete_romaneio(id_romaneio):
 ------------------------------------------------------------------''')
     
     return True
+
+def query_insert_peca(id_peca):
+    cursor = connect_custom()
+    cursor.execute(f'''
+    DELETE FROM TbRomaneio WHERE ID = {id_peca}
+
+------------------------------------------------------------------''')
+    
+    return True
