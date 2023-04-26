@@ -6,6 +6,7 @@ class Romaneio(models.Model):
     Usuario = models.CharField(max_length=100, blank=True, default='')
     Nome_Motorista = models.CharField(max_length=100, blank=True, default='')
     Placa_Carro = models.CharField(max_length=100, blank=True, default='')
+    ID_Obra = models.IntegerField(blank=False)
     Data_Inicio = models.DateTimeField(auto_now_add=False, blank=True)
     Data_Final = models.DateTimeField(auto_now_add=False, blank=True)
     ID_Status = models.CharField(max_length=100, blank=True, default='')

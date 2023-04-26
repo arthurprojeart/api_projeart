@@ -55,7 +55,6 @@ def delete_romaneio(request, format=None):
     if request.method == 'DELETE':
         db_connect.query_delete_pecas(id_romaneio)
         db_connect.query_delete_romaneio(id_romaneio)
-
         return Response('Romaneio deletado!')
 
 class PecasCarregadas(generics.ListCreateAPIView):
@@ -106,6 +105,17 @@ def peca_detalhe(request, format=None):
         peca = dw_connect.query_get_peca(peca_id)
         
         return Response(peca)
+
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def peca_detalhe(request, format=None):
+#     peca_id = request.GET['ordem_ou_nome']
+#     peca = dw_connect.query_get_peca(peca_id)
+
+#     if request.method == 'POST':
+#         peca = dw_connect.query_get_peca(peca_id)
+        
+#         return Response(peca)
 
 
     

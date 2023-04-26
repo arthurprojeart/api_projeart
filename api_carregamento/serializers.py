@@ -25,14 +25,14 @@ class RomaneioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Romaneio
         #owner = serializers.ReadOnlyField(source='owner.username')
-        fields = ['ID','Usuario', 'Nome_Motorista','Placa_Carro', 'Data_Inicio', 'Data_Final','ID_Status']
+        fields = ['ID','Usuario', 'Nome_Motorista','Placa_Carro', 'ID_Obra','Data_Inicio', 'Data_Final','ID_Status']
         read_only_fields = ['ID', 'Data_Final']
 
 class RomaneioAtualizaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Romaneio
         #owner = serializers.ReadOnlyField(source='owner.username')
-        fields = ['ID','Usuario', 'Nome_Motorista','Placa_Carro', 'Data_Inicio', 'Data_Final','ID_Status']
+        fields = ['ID','Usuario', 'Nome_Motorista','Placa_Carro', 'ID_Obra','Data_Inicio', 'Data_Final','ID_Status']
         read_only_fields = ['ID', 'Data_Inicio', 'Usuario', 'Nome_Motorista','Placa_Carro', 'Data_Inicio']
 
 class PecasSerializer(serializers.ModelSerializer):
