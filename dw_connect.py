@@ -144,8 +144,90 @@ GROUP BY
 
     return peca_json
 
-def query_post_romaneio(romaneio):
-    return
+def query_get_ordem(Ordem_Fabricacao):
+
+    if type(Ordem_Fabricacao) is int:
+        ordem_certa = Ordem_Fabricacao
+    else:
+        ordem_certa = int(Ordem_Fabricacao)
+    cursor = connect_projeart()
+    cursor.execute(f'''
+        SELECT 
+	OrdemDeFabricacao = Lot.CdLot
+,	NomePeca = ObjPrd.NmObj
+,	Obra = LotObr.NmLot
+,	IdObra = LotObr.CdLot
+,	Trecho = Tre.TtOpl
+,	IdTrecho = Tre.CdLot
+,	Marca = Mar.TtOpo
+,	Desenho = OplDes.TtOpl
+,	PesoUnitario = Uap.QtUapLiq
+,	QuantidadeProduzida = Lot.QtLotPrdUap
+,   ID_TbRomaneio = 1
+FROM TbLot Lot 
+left join	TbObj Obj on Obj.CdObj = Lot.CdObjPrd 
+join TbOpl UltProc (NOLOCK) on  UltProc.CdLot = Lot.CdLot
+							and UltProc.CdCrc = 299 -- Ultimo Processo
+JOIN TbUap Uap (NOLOCK) on Uap.CdUap = Lot.CdUap
+left join TbPex Pex (NOLOCK) on  Pex.CdPex = Lot.CdPex
+JOIN TbPxo Pxo on Pxo.CdPxo = Pex.CdPxoPri
+  JOIN TbPxa Pxa on Pxa.CdPxo = Pxo.CdPxo
+JOIN TbLot LotAtv on LotAtv.CdLot = Pxa.CdLotAtv
+join      TbObj ObjPrd     on  ObjPrd.CdObj = Lot.CdObjPrd
+LEFT JOIN TbOpl OplDes (NOLOCK) on OplDes.CdLot = Lot.CdLot 
+						and OplDes.CdCrc = 274 --Desenho
+LEFT JOIN TbOpl Obt (NOLOCK) on  Obt.CdLot = Lot.CdLot
+							AND Obt.CdCrc = 261 -- 1. Obra/Trecho
+  LEFT JOIN TbOpl Obr (NOLOCK) on  Obr.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef, PATINDEX('%'+CHAR(160)+'%', Obt.NrOplRef) + 1, LEN(Obt.NrOplRef)))
+							AND Obr.CdCrc = 258 -- OBRA
+  LEFT JOIN TbLot LotObr (NOLOCK) on LotObr.CdLot = CONVERT(Int, SUBSTRING(Obr.NrOplRef, PATINDEX('%'+CHAR(160)+'%', Obr.NrOplRef) + 1, LEN(Obr.NrOplRef)))
+
+LEFT JOIN TbOpl Tre (NOLOCK) on  Tre.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef, PATINDEX('%'+CHAR(160)+'%', Obt.NrOplRef) + 1, LEN(Obt.NrOplRef)))
+							AND Tre.CdCrc = 260 -- TRECHO
+
+
+  LEFT JOIN TbOpo Mar (NOLOCK) on  Mar.CdObj = Obj.CdObj
+							AND Mar.CdCrc = 249 -- Marca
+
+WHERE
+	Lot.TpLotSta = 1 -- Apenas em Aberto
+	And Lot.CdObj = 40766 --OF - PROJEART
+    And Lot.CdLot = {ordem_certa}
+
+--and Obj.CdObj003 = 39385 -- Apenas COMPONENTES
+
+GROUP BY
+	Lot.CdLot
+,	Lot.QtLotUap
+,	Lot.QtLot
+,	Uap.QtUapLiq
+,	Pex.CdPxoPri
+,	LotAtv.CdLot
+,	Lot.QtLotPrdUap
+,	ObjPrd.NmObj
+,	OplDes.TtOpl
+,	LotObr.NmLot
+,	LotObr.CdLot
+,	Mar.TtOpo
+,	ObjPrd.NmObj
+,	Tre.TtOpl
+,	Tre.CdLot
+
+        ------------------------------------------------------------------''')
+    
+    rows = cursor.fetchall()
+
+    rows = list(rows[0]) 
+    df_peca = pd.DataFrame(rows, index=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida', 'ID_TbRomaneio'])
+    
+    df_peca.iloc[8] = pd.to_numeric(df_peca.iloc[8])
+    df_peca.iloc[9] = pd.to_numeric(df_peca.iloc[9])
+    #teste = list(df_peca[0])
+    peca_dict = df_peca.to_dict()
+    peca_dict = peca_dict[0]
+
+    return peca_dict
 
 
 
+#print(query_get_ordem(134690))

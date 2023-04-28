@@ -35,8 +35,26 @@ class RomaneioAtualizaSerializer(serializers.ModelSerializer):
         fields = ['ID','Usuario', 'Nome_Motorista','Placa_Carro', 'ID_Obra','Data_Inicio', 'Data_Final','ID_Status']
         read_only_fields = ['ID', 'Data_Inicio', 'Usuario', 'Nome_Motorista','Placa_Carro', 'Data_Inicio']
 
+
+# class PecasSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Pecas
+#         fields = '__all__'
+
 class PecasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pecas
-        fields = ['ID', 'id_romaneio', 'id_peca','qtd_peca', 'usuario', 'data_carregamento']
-        #read_only_fields = ['ID']
+        fields = [
+                  'ID', 
+                  'Usuario',
+                  'ID_TbRomaneio', 
+                  'Ordem_Fabricacao',
+                  'Nome_Peca',
+                  'ID_Obra', 
+                  'Nome_Obra', 
+                  'ID_Trecho',
+                  'Nome_Trecho',
+                  'Quantidade_Carregado',
+                  'Data',
+                  ]
+        read_only_fields = ['ID']

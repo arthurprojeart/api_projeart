@@ -13,6 +13,8 @@ urlpatterns = [
     path('romaneios/<int:pk>/',views.AtualizaRomaneio.as_view()),
     path('romaneios/<int:pk>/delete',views.DeleteRomaneio.as_view()),
     path('romaneios/delete/',views.delete_romaneio),
+    path('romaneios/pecas/',views.CarregarPecas.as_view()),
+
     #path('romaneios/<int:pk>/peca',views.AtualizaRomaneio.as_view()),
     path('obras/',views.obras_lista),
     path('trechos/',views.trechos_lista),
