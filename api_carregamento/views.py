@@ -144,3 +144,15 @@ class PecasRomaneio(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 #Analisar o ChatGPT, Parece qye basta usar uma ListAPIview para o Serialziar das pecas nested
+class PecasRecebimento(APIView):
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        querypecas = Pecas.objects.filter(ID_TbRomaneio=request.data.get('ID_TbRomaneio'))
+        #queryset = Pecas.objects.prefetch_related(Prefetch('ID_TbRomaneio', queryset=Romaneio.objects.select_related('ID_TbRomaneio')))
+        #queryregistros = Pecas.objects.select_related("Ordem_Fabricacao")
+        #queryromaneio = Romaneio.objects.filter(ID=request.data.get('ID_TbRomaneio'))
+
+        serializer = PecasSerializer(querypecas, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
