@@ -69,9 +69,11 @@ def query_get_peca(ordem_ou_nome):
     if type(ordem_ou_nome) is int:
         ordem = ordem_ou_nome
         nome = ''
+    
     else:
         nome = ordem_ou_nome
         ordem = 0
+
     cursor = connect_projeart()
     cursor.execute(f'''
         SELECT 
@@ -85,6 +87,7 @@ def query_get_peca(ordem_ou_nome):
 ,	Desenho = OplDes.TtOpl
 ,	PesoUnitario = Uap.QtUapLiq
 ,	QuantidadeProduzida = Lot.QtLotPrdUap
+
 FROM TbLot Lot 
 left join	TbObj Obj on Obj.CdObj = Lot.CdObjPrd 
 join TbOpl UltProc (NOLOCK) on  UltProc.CdLot = Lot.CdLot
@@ -137,12 +140,15 @@ GROUP BY
         ------------------------------------------------------------------''')
     
     rows = cursor.fetchall()
+    
     rows = list(rows[0]) 
     df_peca = pd.DataFrame(rows, index=['OrdemDeFabricacao', 'NomePeca','Obra','IdObra','Trecho','IdTrecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida'])
     df_peca = df_peca.transpose()
     peca_json = df_peca.to_json(orient="records", force_ascii=False)
 
     return peca_json
+
+#print(query_get_peca(500634))
 
 def query_get_ordem(Ordem_Fabricacao):
 
@@ -163,7 +169,8 @@ def query_get_ordem(Ordem_Fabricacao):
 ,	Desenho = OplDes.TtOpl
 ,	PesoUnitario = Uap.QtUapLiq
 ,	QuantidadeProduzida = Lot.QtLotPrdUap
-,   ID_TbRomaneio = 1
+,   QuantidadeTotal = Lot.QtLotUap
+,   ID_Romaneio = 1
 FROM TbLot Lot 
 left join	TbObj Obj on Obj.CdObj = Lot.CdObjPrd 
 join TbOpl UltProc (NOLOCK) on  UltProc.CdLot = Lot.CdLot
@@ -218,10 +225,11 @@ GROUP BY
     rows = cursor.fetchall()
 
     rows = list(rows[0]) 
-    df_peca = pd.DataFrame(rows, index=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida', 'ID_TbRomaneio'])
-    
+    df_peca = pd.DataFrame(rows, index=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','QuantidadeProduzida', 'Quantidade_Total','ID_TbRomaneio'])
+    #df_peca.iloc[7] = pd.to_numeric(df_peca.iloc[7])
     df_peca.iloc[8] = pd.to_numeric(df_peca.iloc[8])
     df_peca.iloc[9] = pd.to_numeric(df_peca.iloc[9])
+    df_peca.iloc[7] = '1'
     #teste = list(df_peca[0])
     peca_dict = df_peca.to_dict()
     peca_dict = peca_dict[0]

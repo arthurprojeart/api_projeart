@@ -18,9 +18,11 @@ urlpatterns = [
     #path('romaneios/<int:pk>/peca',views.AtualizaRomaneio.as_view()),
     path('obras/',views.obras_lista),
     path('trechos/',views.trechos_lista),
-    path('pecas/detalhe/',views.peca_detalhe),
+    #path('pecas/detalhe/',views.peca_detalhe),
+    path('pecas/detalhe/',views.PegarPecas.as_view()),
     path('pecas/<int:id_romaneio>',views.PecasCarregadas.as_view()),
     path('pecas/',views.PecasCarregadas.as_view()),
+    path('pecas/romaneio/',views.PecasRomaneio.as_view()),
     #path('users/', views.UserList.as_view()),
     #path('users/<int:pk>/', views.UserDetail.as_view()),
 ]

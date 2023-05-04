@@ -18,7 +18,7 @@ def connect_custom():
 def query_delete_pecas(id_romaneio):
     cursor = connect_custom()
     cursor.execute(f'''
-    DELETE FROM TbRomaneioPecas WHERE id_romaneio = {id_romaneio}
+    DELETE FROM TbPecasRomaneio WHERE ID_TbRomaneio = {id_romaneio}
 
 ------------------------------------------------------------------''')
     
@@ -27,7 +27,7 @@ def query_delete_pecas(id_romaneio):
 def query_delete_romaneio(id_romaneio):
     cursor = connect_custom()
     cursor.execute(f'''
-    DELETE FROM TbRomaneio WHERE ID = {id_romaneio}
+    DELETE FROM TbRomaneio WHERE ID_Romaneio = {id_romaneio}
 
 ------------------------------------------------------------------''')
     
@@ -36,7 +36,7 @@ def query_delete_romaneio(id_romaneio):
 def query_insert_peca(id_peca):
     cursor = connect_custom()
     cursor.execute(f'''
-    DELETE FROM TbRomaneio WHERE ID = {id_peca}
+    DELETE FROM TbRomaneio WHERE ID_Romaneio = {id_peca}
 
 ------------------------------------------------------------------''')
     

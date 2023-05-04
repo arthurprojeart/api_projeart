@@ -10,11 +10,12 @@ from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics, status
 
 from api_carregamento.models import  Romaneio, Pecas #Carregamento,
-from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer #CarregamentoSerializer, UserSerializer
+from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRomaneioSerializer #CarregamentoSerializer, UserSerializer
 
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 import dw_connect, db_connect
+from django.db.models import Prefetch
 
 class RomaneioLista(generics.ListCreateAPIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
@@ -52,7 +53,7 @@ class DeleteRomaneio(generics.DestroyAPIView):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_romaneio(request, format=None):
-    id_romaneio = request.GET['ID']
+    id_romaneio = request.GET['ID_TbRomaneio']
     if request.method == 'DELETE':
         db_connect.query_delete_pecas(id_romaneio)
         db_connect.query_delete_romaneio(id_romaneio)
@@ -81,6 +82,7 @@ class CarregarPecas(APIView):
         peca['ID_TbRomaneio'] = request.data.get('ID_TbRomaneio')
         peca['Usuario'] = request.data.get('Usuario')
         peca['Quantidade_Carregado'] = request.data.get('Quantidade_Carregado')
+        
         serializer_pecas = PecasSerializer(data=peca)
 
         if serializer_pecas.is_valid():
@@ -117,7 +119,28 @@ def peca_detalhe(request, format=None):
     peca_id = request.GET['ordem_ou_nome']
     if request.method == 'GET':
         peca = dw_connect.query_get_peca(peca_id)
-        
         return Response(peca)
 
+class PegarPecas(APIView):
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request, format=None):
+        peca = dw_connect.query_get_peca(request.data.get('ordem_ou_nome'))
+        return Response(peca, status=status.HTTP_200_OK)
+
+class PecasRomaneio(APIView):
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        querypecas = Pecas.objects.filter(ID_TbRomaneio=request.data.get('ID_TbRomaneio'))
+        #queryset = Pecas.objects.prefetch_related(Prefetch('ID_TbRomaneio', queryset=Romaneio.objects.select_related('ID_TbRomaneio')))
+        #queryregistros = Pecas.objects.select_related("Ordem_Fabricacao")
+        #queryromaneio = Romaneio.objects.filter(ID=request.data.get('ID_TbRomaneio'))
+
+        serializer = PecasSerializer(querypecas, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+#Analisar o ChatGPT, Parece qye basta usar uma ListAPIview para o Serialziar das pecas nested
