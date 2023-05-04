@@ -10,7 +10,7 @@ def connect_projeart():
     user = os.getenv('USER_DW')
     password = os.getenv('PASSWORD')
     db = os.getenv('DBPROJEART')
-    cnxn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER='+server+';DATABASE='+db+';UID='+user+';PWD='+ password, TrustServerCertificate='Yes')
+    cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+db+';UID='+user+';PWD='+ password, TrustServerCertificate='Yes')
     cursor = cnxn.cursor()
     return cursor
 
@@ -19,7 +19,7 @@ def connect_dw():
     user = os.getenv('USER_DW')
     password = os.getenv('PASSWORD')
     db = os.getenv('DBDW')
-    cnxn = pyodbc.connect('DRIVER={ODBC Driver 18 for SQL Server};SERVER='+server+';DATABASE='+db+';UID='+user+';PWD='+ password, TrustServerCertificate='Yes')
+    cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+db+';UID='+user+';PWD='+ password, TrustServerCertificate='Yes')
     cursor = cnxn.cursor()
     return cursor
 import numpy as np
@@ -66,8 +66,14 @@ def query_trechos(obra_id):
     return df_obras
 
 def query_get_peca(ordem_ou_nome):
-    #if type(ordem_ou_nome) is int:
-    ordem_ou_nome = str(ordem_ou_nome)
+    if type(ordem_ou_nome) is int:
+        ordem = ordem_ou_nome
+        nome = ''
+    
+    else:
+        nome = ordem_ou_nome
+        ordem = 0
+
     cursor = connect_projeart()
     cursor.execute(f'''
         SELECT 
@@ -81,6 +87,7 @@ def query_get_peca(ordem_ou_nome):
 ,	Desenho = OplDes.TtOpl
 ,	PesoUnitario = Uap.QtUapLiq
 ,	QuantidadeProduzida = Lot.QtLotPrdUap
+
 FROM TbLot Lot 
 left join	TbObj Obj on Obj.CdObj = Lot.CdObjPrd 
 join TbOpl UltProc (NOLOCK) on  UltProc.CdLot = Lot.CdLot
@@ -109,7 +116,7 @@ LEFT JOIN TbOpl Tre (NOLOCK) on  Tre.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef
 WHERE
 	Lot.TpLotSta = 1 -- Apenas em Aberto
 	And Lot.CdObj = 40766 --OF - PROJEART
-    And (Lot.CdLot = {ordem_ou_nome} or ObjPrd.NmObj like '%{ordem_ou_nome}%')
+    And (Lot.CdLot = {ordem} or ObjPrd.NmObj like '%{nome}%')
 
 --and Obj.CdObj003 = 39385 -- Apenas COMPONENTES
 
@@ -133,15 +140,102 @@ GROUP BY
         ------------------------------------------------------------------''')
     
     rows = cursor.fetchall()
+    
     rows = list(rows[0]) 
     df_peca = pd.DataFrame(rows, index=['OrdemDeFabricacao', 'NomePeca','Obra','IdObra','Trecho','IdTrecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida'])
     df_peca = df_peca.transpose()
     peca_json = df_peca.to_json(orient="records", force_ascii=False)
 
     return peca_json
-#print(query_get_peca('D7-3-01'))
-def query_post_romaneio(romaneio):
-    return
+
+#print(query_get_peca(500634))
+
+def query_get_ordem(Ordem_Fabricacao):
+
+    if type(Ordem_Fabricacao) is int:
+        ordem_certa = Ordem_Fabricacao
+    else:
+        ordem_certa = int(Ordem_Fabricacao)
+    cursor = connect_projeart()
+    cursor.execute(f'''
+        SELECT 
+	OrdemDeFabricacao = Lot.CdLot
+,	NomePeca = ObjPrd.NmObj
+,	Obra = LotObr.NmLot
+,	IdObra = LotObr.CdLot
+,	Trecho = Tre.TtOpl
+,	IdTrecho = Tre.CdLot
+,	Marca = Mar.TtOpo
+,	Desenho = OplDes.TtOpl
+,	PesoUnitario = Uap.QtUapLiq
+,	QuantidadeProduzida = Lot.QtLotPrdUap
+,   QuantidadeTotal = Lot.QtLotUap
+,   ID_Romaneio = 1
+FROM TbLot Lot 
+left join	TbObj Obj on Obj.CdObj = Lot.CdObjPrd 
+join TbOpl UltProc (NOLOCK) on  UltProc.CdLot = Lot.CdLot
+							and UltProc.CdCrc = 299 -- Ultimo Processo
+JOIN TbUap Uap (NOLOCK) on Uap.CdUap = Lot.CdUap
+left join TbPex Pex (NOLOCK) on  Pex.CdPex = Lot.CdPex
+JOIN TbPxo Pxo on Pxo.CdPxo = Pex.CdPxoPri
+  JOIN TbPxa Pxa on Pxa.CdPxo = Pxo.CdPxo
+JOIN TbLot LotAtv on LotAtv.CdLot = Pxa.CdLotAtv
+join      TbObj ObjPrd     on  ObjPrd.CdObj = Lot.CdObjPrd
+LEFT JOIN TbOpl OplDes (NOLOCK) on OplDes.CdLot = Lot.CdLot 
+						and OplDes.CdCrc = 274 --Desenho
+LEFT JOIN TbOpl Obt (NOLOCK) on  Obt.CdLot = Lot.CdLot
+							AND Obt.CdCrc = 261 -- 1. Obra/Trecho
+  LEFT JOIN TbOpl Obr (NOLOCK) on  Obr.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef, PATINDEX('%'+CHAR(160)+'%', Obt.NrOplRef) + 1, LEN(Obt.NrOplRef)))
+							AND Obr.CdCrc = 258 -- OBRA
+  LEFT JOIN TbLot LotObr (NOLOCK) on LotObr.CdLot = CONVERT(Int, SUBSTRING(Obr.NrOplRef, PATINDEX('%'+CHAR(160)+'%', Obr.NrOplRef) + 1, LEN(Obr.NrOplRef)))
+
+LEFT JOIN TbOpl Tre (NOLOCK) on  Tre.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef, PATINDEX('%'+CHAR(160)+'%', Obt.NrOplRef) + 1, LEN(Obt.NrOplRef)))
+							AND Tre.CdCrc = 260 -- TRECHO
+
+
+  LEFT JOIN TbOpo Mar (NOLOCK) on  Mar.CdObj = Obj.CdObj
+							AND Mar.CdCrc = 249 -- Marca
+
+WHERE
+	Lot.TpLotSta = 1 -- Apenas em Aberto
+	And Lot.CdObj = 40766 --OF - PROJEART
+    And Lot.CdLot = {ordem_certa}
+
+--and Obj.CdObj003 = 39385 -- Apenas COMPONENTES
+
+GROUP BY
+	Lot.CdLot
+,	Lot.QtLotUap
+,	Lot.QtLot
+,	Uap.QtUapLiq
+,	Pex.CdPxoPri
+,	LotAtv.CdLot
+,	Lot.QtLotPrdUap
+,	ObjPrd.NmObj
+,	OplDes.TtOpl
+,	LotObr.NmLot
+,	LotObr.CdLot
+,	Mar.TtOpo
+,	ObjPrd.NmObj
+,	Tre.TtOpl
+,	Tre.CdLot
+
+        ------------------------------------------------------------------''')
+    
+    rows = cursor.fetchall()
+
+    rows = list(rows[0]) 
+    df_peca = pd.DataFrame(rows, index=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','QuantidadeProduzida', 'Quantidade_Total','ID_TbRomaneio'])
+    #df_peca.iloc[7] = pd.to_numeric(df_peca.iloc[7])
+    df_peca.iloc[8] = pd.to_numeric(df_peca.iloc[8])
+    df_peca.iloc[9] = pd.to_numeric(df_peca.iloc[9])
+    df_peca.iloc[7] = '1'
+    #teste = list(df_peca[0])
+    peca_dict = df_peca.to_dict()
+    peca_dict = peca_dict[0]
+
+    return peca_dict
 
 
 
+#print(query_get_ordem(134690))

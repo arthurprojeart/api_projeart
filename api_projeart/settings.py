@@ -1,5 +1,7 @@
 from pathlib import Path
-
+from dotenv import load_dotenv  
+import os
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -11,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-8g$6jmx_$!_0l)47k__!4flh&)y00!t=#e_0#4r&hn$^mzvxx8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['192.168.1.78', 'api.projeart.ind.br', 'localhost', '*']
 
@@ -20,7 +22,7 @@ ALLOWED_HOSTS = ['192.168.1.78', 'api.projeart.ind.br', 'localhost', '*']
 
 INSTALLED_APPS = [
     'rest_framework_simplejwt',
-
+    'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -76,11 +78,16 @@ WSGI_APPLICATION = 'api_projeart.wsgi.application'
 DATABASES= {
     'default':{
         'ENGINE':'mssql',#'sql_server.pyodbc',
-        'NAME':'ProjeartCustom',
-        'USER':'arthur.almeida',
-        'PASSWORD':'UqoLGO0zLG5GpLaWe2PM',
-        'HOST':'54.232.251.153',
+        'NAME':os.getenv('DBCUSTOM'),
+        'USER': os.getenv('USER_DW'),
+        'PASSWORD':os.getenv('PASSWORD'),
+        'HOST':os.getenv('SERVER'),
         'PORT':'1433', #1433
+
+
+
+
+
 
         'OPTIONS':{
             'driver':'ODBC Driver 17 for SQL Server'
