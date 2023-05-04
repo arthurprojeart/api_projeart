@@ -1,19 +1,7 @@
 from django.db import models
 
 
-class Romaneio(models.Model):
-    ID_Romaneio = models.BigAutoField(primary_key=True)
-    Nome_Motorista = models.CharField(max_length=100, blank=True, default='')
-    Placa_Carro = models.CharField(max_length=100, blank=True, default='')
-    ID_Obra = models.IntegerField(blank=False)
-    Data_Inicio = models.DateTimeField(auto_now_add=False, blank=True)
-    Usuario_Inicio = models.CharField(max_length=100, blank=True, default='')
-    Data_Final = models.DateTimeField(auto_now_add=False, blank=True)
-    Usuario_Final = models.CharField(max_length=100, blank=True, default='')
-    ID_Status = models.IntegerField(blank=True, default=1)
-    class Meta:
-        managed = False
-        db_table = 'TbRomaneio'
+
 
 class Pecas(models.Model):
     ID_Peca = models.BigAutoField(primary_key=True)
@@ -34,5 +22,20 @@ class Pecas(models.Model):
     Data_Entrada = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        managed = False
+        managed = True
         db_table = 'TbPecasRomaneio'
+
+class Romaneio(models.Model):
+    ID_Romaneio = models.BigAutoField(primary_key=True)
+    Nome_Motorista = models.CharField(max_length=100, blank=True, default='')
+    Placa_Carro = models.CharField(max_length=100, blank=True, default='')
+    ID_Obra = models.IntegerField(blank=False)
+    Data_Inicio = models.DateTimeField(auto_now_add=False, blank=True)
+    Usuario_Inicio = models.CharField(max_length=100, blank=True, default='')
+    Data_Final = models.DateTimeField(auto_now_add=False, blank=True)
+    Usuario_Final = models.CharField(max_length=100, blank=True, default='')
+    ID_Status = models.IntegerField(blank=True, default=1)
+    Pecas = models.ForeignKey(Pecas, on_delete=models.CASCADE)
+    class Meta:
+        managed = True
+        db_table = 'TbRomaneio'
