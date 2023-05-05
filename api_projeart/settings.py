@@ -13,8 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-8g$6jmx_$!_0l)47k__!4flh&)y00!t=#e_0#4r&hn$^mzvxx8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
+DEBUG = True
 ALLOWED_HOSTS = ['192.168.1.78', 'api.projeart.ind.br', 'localhost', '*']
 
 
@@ -77,7 +76,8 @@ WSGI_APPLICATION = 'api_projeart.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 DATABASES= {
     'default':{
-        'ENGINE':'mssql',#'sql_server.pyodbc',
+        #'ENGINE':'mssql',#'sql_server.pyodbc',
+        'ENGINE':'sql_server.pyodbc',#'sql_server.pyodbc',
         'NAME':os.getenv('DBCUSTOM'),
         'USER': os.getenv('USER_DW'),
         'PASSWORD':os.getenv('PASSWORD'),
@@ -110,7 +110,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_TOKEN_TIMEOUT': 86400, # set timeout to 24 hours (86400 seconds)
 
 }
 

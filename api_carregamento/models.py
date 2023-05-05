@@ -1,24 +1,25 @@
 from django.db import models
 
-
 class Romaneio(models.Model):
-    ID_Romaneio = models.BigAutoField(primary_key=True)
+    romaneio_id = models.BigAutoField(primary_key=True)
     Nome_Motorista = models.CharField(max_length=100, blank=True, default='')
     Placa_Carro = models.CharField(max_length=100, blank=True, default='')
-    ID_Obra = models.IntegerField(blank=False)
+    ID_Obra = models.IntegerField(blank=True)
     Data_Inicio = models.DateTimeField(auto_now_add=False, blank=True)
     Usuario_Inicio = models.CharField(max_length=100, blank=True, default='')
     Data_Final = models.DateTimeField(auto_now_add=False, blank=True)
     Usuario_Final = models.CharField(max_length=100, blank=True, default='')
-    ID_Status = models.IntegerField(blank=True, default=1)
+    ID_Status = models.CharField(max_length=20, blank=True, default='')
+    # Pecas = models.ForeignKey(Pecas, on_delete=models.CASCADE, db_column='Pecas')
+    # Pecas = models.IntegerField(blank=True, default=1)
     class Meta:
-        managed = False
+        managed = True
         db_table = 'TbRomaneio'
 
 class Pecas(models.Model):
-    ID_Peca = models.BigAutoField(primary_key=True)
-    #ID_TbRomaneio = models.ForeignKey(Romaneio, on_delete=models.CASCADE)
-    ID_TbRomaneio = models.IntegerField(blank=False)
+    peca_id = models.BigAutoField(primary_key=True)
+    romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE, db_column='romaneio_id')
+    #romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
     Ordem_Fabricacao = models.IntegerField(blank=False)
     Nome_Peca = models.CharField(max_length=50,blank=False)
@@ -34,5 +35,10 @@ class Pecas(models.Model):
     Data_Entrada = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        managed = False
+        managed = True
         db_table = 'TbPecasRomaneio'
+
+
+
+
+

@@ -13,6 +13,7 @@ distro-info===1.1build1
 Django==3.2.18
 django-cors-headers==3.14.0
 django-filter==23.1
+django-mssql-backend==2.8.1
 django-oauth-toolkit==2.2.0
 django-pyodbc-azure==2.1.0.0
 djangorestframework==3.14.0
