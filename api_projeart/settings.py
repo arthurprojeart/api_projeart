@@ -110,7 +110,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_TOKEN_TIMEOUT': 86400, # set timeout to 24 hours (86400 seconds)
 
 }
 

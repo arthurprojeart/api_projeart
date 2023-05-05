@@ -66,13 +66,15 @@ def query_trechos(obra_id):
     return df_obras
 
 def query_get_peca(ordem_ou_nome):
+    print(ordem_ou_nome)
+    print(type(ordem_ou_nome))
     if type(ordem_ou_nome) is int:
         ordem = ordem_ou_nome
         nome = ''
     
     else:
         nome = ordem_ou_nome
-        ordem = 0
+        ordem = ordem_ou_nome
 
     cursor = connect_projeart()
     cursor.execute(f'''
@@ -116,7 +118,7 @@ LEFT JOIN TbOpl Tre (NOLOCK) on  Tre.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef
 WHERE
 	Lot.TpLotSta = 1 -- Apenas em Aberto
 	And Lot.CdObj = 40766 --OF - PROJEART
-    And (Lot.CdLot = {ordem} or ObjPrd.NmObj like '%{nome}%')
+    And (Lot.CdLot  like '%{ordem}%' or ObjPrd.NmObj like '%{nome}%')
 
 --and Obj.CdObj003 = 39385 -- Apenas COMPONENTES
 
@@ -140,12 +142,13 @@ GROUP BY
         ------------------------------------------------------------------''')
     
     rows = cursor.fetchall()
-    
-    rows = list(rows[0]) 
-    df_peca = pd.DataFrame(rows, index=['OrdemDeFabricacao', 'NomePeca','Obra','IdObra','Trecho','IdTrecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida'])
-    df_peca = df_peca.transpose()
-    peca_json = df_peca.to_json(orient="records", force_ascii=False)
-
+    if len(rows) > 0:
+        rows = list(rows[0]) 
+        df_peca = pd.DataFrame(rows, index=['OrdemDeFabricacao', 'NomePeca','Obra','IdObra','Trecho','IdTrecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida'])
+        df_peca = df_peca.transpose()
+        peca_json = df_peca.to_json(orient="records", force_ascii=False)
+    else:
+        peca_json = 'Não Encontrado'
     return peca_json
 
 #print(query_get_peca(500634))
