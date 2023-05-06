@@ -10,10 +10,11 @@ urlpatterns = [
     
     path('obras/',views.obras_lista),
     path('trechos/',views.trechos_lista),
+    path('pecas/detalhe/',views.peca_detalhe),
     path('romaneios/',views.RomaneioLista.as_view()),
     path('romaneios/<int:pk>/',views.RomaneioAtualiza.as_view()),
     
-    #path('pecas/',views.PecasLista.as_view()),
+    #path('pecas/detalhe',views.PecasLista.as_view()),
 
     path('pecas/',views.PecasRomaneio.as_view()),
     path('pecas/<int:pk>/',views.PecasRomaneio.as_view()),
