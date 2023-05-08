@@ -1,7 +1,11 @@
 from django.db import models
 
+
+
 class Romaneio(models.Model):
     romaneio_id = models.BigAutoField(primary_key=True)
+    #peca_id = models.ForeignKey(Pecas, on_delete=models.CASCADE, db_column='peca_id')
+    #peca_id = models.IntegerField(blank=True)
     Nome_Motorista = models.CharField(max_length=100, blank=True, default='')
     Placa_Carro = models.CharField(max_length=100, blank=True, default='')
     ID_Obra = models.IntegerField(blank=True)
@@ -10,15 +14,16 @@ class Romaneio(models.Model):
     Data_Final = models.DateTimeField(auto_now_add=False, blank=True)
     Usuario_Final = models.CharField(max_length=100, blank=True, default='')
     ID_Status = models.CharField(max_length=20, blank=True, default='')
-    # Pecas = models.ForeignKey(Pecas, on_delete=models.CASCADE, db_column='Pecas')
+
     # Pecas = models.IntegerField(blank=True, default=1)
     class Meta:
-        managed = True
+        managed = False
         db_table = 'TbRomaneio'
 
+
 class Pecas(models.Model):
-    peca_id = models.BigAutoField(primary_key=True)
-    romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE, db_column='romaneio_id')
+    leitura_id = models.BigAutoField(primary_key=True)
+    romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='pecas_romaneio')
     #romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
     Ordem_Fabricacao = models.IntegerField(blank=False)
@@ -33,12 +38,12 @@ class Pecas(models.Model):
     Quantidade_Carregado = models.IntegerField(blank=False)
     Quantidade_Total = models.IntegerField(blank=False)
     Data_Entrada = models.DateTimeField(auto_now_add=True)
-    
+    Quantidade_Recebida = models.IntegerField(blank=False)
+    Usuario_Recebimento = models.CharField(max_length=50,blank=False)
+    Data_Recebida = models.DateTimeField(auto_now_add=True)
+
     class Meta:
-        managed = True
+        managed = False
         db_table = 'TbPecasRomaneio'
-
-
-
 
 
