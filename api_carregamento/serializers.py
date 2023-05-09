@@ -62,7 +62,7 @@ class PecasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pecas
         fields = [
-                  'peca_id', 
+                  'leitura_id', 
                   'romaneio_id', 
                   'Usuario',
                   'Ordem_Fabricacao',
@@ -80,26 +80,42 @@ class PecasSerializer(serializers.ModelSerializer):
                   ]
         read_only_fields = ['ID']
 
-class PecasRecebimentoSerializer(serializers.ModelSerializer):
-    romaneio_id = RomaneioSerializer()
-    #Ordem_Fabricacao = PecasSerializer()
+class RecebimentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pecas
         fields = [
-                  'peca_id', 
-                  'romaneio_id', 
-                  'Usuario',
-                  'Ordem_Fabricacao',
-                  'Nome_Peca',
-                  'ID_Obra', 
-                  'Nome_Obra', 
-                  'ID_Trecho',
-                  'Nome_Trecho',
-                  'Desenho',
-                  'Marca',
-                  'Peso_Unitario',
-                  'Quantidade_Carregado',
-                  'Quantidade_Total',
-                  'Data_Entrada',
+                    'Ordem_Fabricacao',
+                    'romaneio_id', 
+                    'Quantidade_Recebida',
+                    'Data_Recebida',
+                    'Usuario_Recebimento',
                   ]
+        read_only_fields = ['ID', 
+                            'leitura_id', 
+                            'Nome_Peca', 
+                            'ID_Obra', 
+                            'Nome_Obra', 
+                            'ID_Trecho',
+                            'Nome_Trecho',
+                            'Desenho',
+                            'Marca',
+                            'Peso_Unitario',
+                            'Quantidade_Carregado',
+                            'Quantidade_Total',
+                            'Data_Entrada',
+                            ]
+
+class PecasRecebimentoSerializer(serializers.ModelSerializer):
+    pecas_romaneio = PecasSerializer(many=True)# many=True,
+    #Ordem_Fabricacao = PecasSerializer()
+    class Meta:
+        model = Romaneio
+        fields = '__all__'
         read_only_fields = ['ID']
+    def create(self, validated_data):
+        pecas_romaneio = validated_data.pop('pecas_romaneio')
+        romaneio_instancia = Romaneio.objects.create(**validated_data)
+        for peca in pecas_romaneio:
+            Pecas.objects.create(user=romaneio_instancia,**peca)
+        return romaneio_instancia
+

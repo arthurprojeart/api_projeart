@@ -66,8 +66,7 @@ def query_trechos(obra_id):
     return df_obras
 
 def query_get_peca(ordem_ou_nome):
-    print(ordem_ou_nome)
-    print(type(ordem_ou_nome))
+
     if type(ordem_ou_nome) is int:
         ordem = ordem_ou_nome
         nome = ''
@@ -143,15 +142,17 @@ GROUP BY
     
     rows = cursor.fetchall()
     if len(rows) > 0:
-        rows = list(rows[0]) 
-        df_peca = pd.DataFrame(rows, index=['OrdemDeFabricacao', 'NomePeca','Obra','IdObra','Trecho','IdTrecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida'])
-        df_peca = df_peca.transpose()
+        lista_geral = []
+        for i in range(len(rows)):
+            lista_geral.append(list(rows[i]))
+        
+        df_peca = pd.DataFrame(lista_geral, columns=['OrdemDeFabricacao', 'NomePeca','Obra','IdObra','Trecho','IdTrecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida'])
+        #df_peca = pd.DataFrame(lista_geral)
+        #df_peca = df_peca.transpose()
         peca_json = df_peca.to_json(orient="records", force_ascii=False)
     else:
         peca_json = 'Não Encontrado'
     return peca_json
-
-#print(query_get_peca(500634))
 
 def query_get_ordem(Ordem_Fabricacao):
 

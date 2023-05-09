@@ -10,13 +10,14 @@ from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics, status
 from django.db.models import Q
 from api_carregamento.models import  Romaneio, Pecas #Carregamento,
-from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer #CarregamentoSerializer, UserSerializer
+from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer #CarregamentoSerializer, UserSerializer
 
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 import dw_connect, db_connect
 from django.db.models import Prefetch
 
+#Lista Geral de Obras
 #ENDPOINT 1 [GET]
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -24,6 +25,7 @@ def obras_lista(request, format=None):
     if request.method == 'GET':
         obras = dw_connect.query_obras()
         return Response(obras)
+
 #Lista dos Trechos por Obra Parâmetro ID_Obra
 #ENDPOINT 2 [GET]
 @api_view(['GET'])
@@ -34,14 +36,14 @@ def trechos_lista(request, format=None):
         trechos = dw_connect.query_trechos(obra_id)
         return Response(trechos)
 
+#Lista para buscar Numero de Ordem ou Nome do Objeto
 #ENDPOINT 3 [GET]
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def peca_detalhe(request, format=None):
-    peca_id = request.GET['ordem_ou_nome']
-    if request.method == 'GET':
-        peca = dw_connect.query_get_peca(peca_id)
-        return Response(peca)
+class PegarPecas(APIView):
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        peca = dw_connect.query_get_peca(request.GET.get('ordem_ou_nome'))
+        return Response(peca, status=status.HTTP_200_OK)
 
 # Lista dos Romaneios com Parâmetros de ID_Obra, ID_Trecho e ID_Status
 # ENDPOINT 4[GET], 5[POST]
@@ -107,32 +109,22 @@ class PecasLista(APIView):
         serializer = PecasSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
-
-class PegarPecas(APIView):
-    authentication_classes = [JWTAuthentication, SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, format=None):
-
-        peca = dw_connect.query_get_peca(request.GET.get('ordem_ou_nome'))
-        return Response(peca, status=status.HTTP_200_OK)
-
+#LISTA COM PEÇAS DE UM ROMANEIO
+#ENDPOINT 7[POST], 9[GET], 10[DELETE]
 class PecasRomaneio(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
-
+    # Parâmetro - romaneio_id
     def get(self, request,format=None):
         querypecas = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
         serializer = PecasSerializer(querypecas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-        
+    # Parâmetros JSON - Ordem_Fabricacao, romaneio_id, Usuario, Quantidade_Carregado    
     def post(self, request, format=None):
         peca = dw_connect.query_get_ordem(request.data.get('Ordem_Fabricacao'))
         peca['romaneio_id'] = request.data.get('romaneio_id')
         peca['Usuario'] = request.data.get('Usuario')
         peca['Quantidade_Carregado'] = request.data.get('Quantidade_Carregado')
-        
         serializer_pecas = PecasSerializer(data=peca)
 
         if serializer_pecas.is_valid():
@@ -150,7 +142,14 @@ class PecasRecebimento(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        queryset = Pecas.objects.all()
+        queryset = Romaneio.objects.filter(ID_Obra=request.GET.get('ID_Obra'))
         serializer = PecasRecebimentoSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
+    def put(self, request, pk):
+        my_data = Pecas.objects.get(pk=pk)
+        serializer = RecebimentoSerializer(my_data, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
