@@ -20,7 +20,6 @@ class Romaneio(models.Model):
         managed = False
         db_table = 'TbRomaneio'
 
-
 class Pecas(models.Model):
     leitura_id = models.BigAutoField(primary_key=True)
     romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='pecas_romaneio')

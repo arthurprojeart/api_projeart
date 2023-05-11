@@ -23,7 +23,7 @@ urlpatterns = [
     path('pecas/<int:pk>/',views.PecasRomaneio.as_view()),
     # ENPOINT 11[GET], 12[POST]
     path('recebimento/',views.PecasRecebimento.as_view()),
-
+    path('teste/',views.PecasTeste.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

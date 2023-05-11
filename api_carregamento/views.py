@@ -10,7 +10,7 @@ from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics, status
 from django.db.models import Q
 from api_carregamento.models import  Romaneio, Pecas #Carregamento,
-from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer #CarregamentoSerializer, UserSerializer
+from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer #CarregamentoSerializer, UserSerializer
 
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -52,6 +52,7 @@ class RomaneioLista(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+        
         if request.GET.get('ID_Obra') is not None:
             ID_Obra = request.GET.get('ID_Obra')
             ID_Status = request.GET.get('ID_Status')
@@ -69,11 +70,12 @@ class RomaneioLista(APIView):
                 queryset = Romaneio.objects.filter(Q(ID_Obra=ID_Obra) | Q(ID_Status=ID_Status))
             else:
                 queryset = Romaneio.objects.all()
-            serializer = RomaneioSerializer(queryset, many=True)
+            serializer = RomaneioTrechosSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
         else:
             queryset = Romaneio.objects.all()
-            serializer = RomaneioSerializer(queryset, many=True)
+            serializer = RomaneioTrechosSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
     def post(self, request, format=None):
         serializer = RomaneioSerializer(data=request.data)
@@ -142,6 +144,7 @@ class PecasRecebimento(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+        
         queryset = Romaneio.objects.filter(ID_Obra=request.GET.get('ID_Obra'))
         serializer = PecasRecebimentoSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -153,3 +156,20 @@ class PecasRecebimento(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from django.db.models import Sum
+class PecasTeste(APIView):
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        queryset = Romaneio.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
+        serializer = RomaneioTrechosSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+# class PecasTeste(generics.ListAPIView):
+#     serializer_class = RomaneioTrechosSerializer
+
+#     def get_queryset(self):
+#         queryset = Romaneio.objects.filter(romaneio_id=1)
+#         return queryset.prefetch_related('romaneio_id')
