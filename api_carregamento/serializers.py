@@ -41,6 +41,9 @@ class RomaneioAtualizaSerializer(serializers.ModelSerializer):
         model = Romaneio
         #owner = serializers.ReadOnlyField(source='owner.username')
         fields = ['romaneio_id',
+                  'Data_Final',
+                  'Usuario_Final',
+                  'ID_Status'
                   ]
         read_only_fields = ['ID', 
                             'ID_Obra',
@@ -53,9 +56,7 @@ class RomaneioAtualizaSerializer(serializers.ModelSerializer):
                             'ID_Obra',
                             'Data_Inicio', 
                             'Usuario_Inicio',
-                            'Data_Final',
-                            'Usuario_Final',
-                            'ID_Status']
+                            ]
 
 
 # class PecasSerializer(serializers.ModelSerializer):
