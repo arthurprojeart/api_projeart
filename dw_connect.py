@@ -231,15 +231,19 @@ GROUP BY
     rows = list(rows[0]) 
     df_peca = pd.DataFrame(rows, index=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','QuantidadeProduzida', 'Quantidade_Total','ID_TbRomaneio'])
     #df_peca.iloc[7] = pd.to_numeric(df_peca.iloc[7])
+
+    if df_peca.iloc[6][0] is None:
+        df_peca.iloc[6][0] = df_peca.iloc[1][0].split(' ')[0]
+
     df_peca.iloc[8] = pd.to_numeric(df_peca.iloc[8])
     df_peca.iloc[9] = pd.to_numeric(df_peca.iloc[9])
     df_peca.iloc[7] = '1'
     #teste = list(df_peca[0])
     peca_dict = df_peca.to_dict()
     peca_dict = peca_dict[0]
-
+    
     return peca_dict
 
 
 
-#print(query_get_ordem(134690))
+#print(query_get_ordem(500634))
