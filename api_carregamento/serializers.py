@@ -152,7 +152,7 @@ class RomaneioTrechosSerializer(serializers.ModelSerializer):
         #     return obj.Peso_Unitario * obj.Quantidade_Carregado
 
 from django.db.models import Sum        
-from django.db.models import FloatField, F
+from django.db.models import F
 class RomaneioTrechosSerializer(serializers.ModelSerializer):
     trechos_romaneio = serializers.SerializerMethodField()
 
@@ -172,11 +172,54 @@ class RomaneioTrechosSerializer(serializers.ModelSerializer):
         serializer = PecasTrechoSerializer(queryset, many=True)
         return serializer.data
 
+class LeituraSerializer(serializers.Serializer):
+    #romaneio_id = serializers.IntegerField()
+    leitura_id = serializers.IntegerField()
+    Ordem_Fabricacao = serializers.IntegerField()
+    quantidade_total = serializers.DecimalField(max_digits=10, decimal_places=2)
+    Data_Entrada = serializers.DateTimeField()
 
+class PecasLeiturasSerializer(serializers.ModelSerializer):
+    leituras_romaneio = serializers.SerializerMethodField()
+    quantidade_total = serializers.IntegerField()
+    romaneio_id = serializers.IntegerField(read_only=True)
 
-# class RomaneioTrechosSerializer(serializers.ModelSerializer):
-#     task_extendeds = PecasTrechoSerializer(many=True)
-    
-#     class Meta:
-#         model = Romaneio
-#         fields = '__all__'
+    class Meta:
+        model = Pecas
+        # fields = '__all__'
+        fields = [
+                  'romaneio_id', 
+                  'Usuario',
+                  'Ordem_Fabricacao',
+                  'Nome_Peca',
+                  'ID_Obra', 
+                  'Nome_Obra', 
+                  'ID_Trecho',
+                  'Nome_Trecho',
+                  'Desenho',
+                  'Marca',
+                  'quantidade_total',
+                  'leituras_romaneio',
+                  ]
+        read_only_fields = [
+                            'ID',
+                            #'romaneio_id',
+                            'leitura_id', 
+                            'Peso_Unitario', 
+                            'Data_Entrada',
+                            'Quantidade_Total',
+                            'Quantidade_Carregado',
+                            'Usuario_Recebimento',
+                            'Quantidade_Recebida'
+                            ]
+    def get_leituras_romaneio(self, obj):
+
+        queryset = Pecas.objects.filter(Ordem_Fabricacao = obj['Ordem_Fabricacao']).values(
+            'leitura_id', 'Ordem_Fabricacao', 'Quantidade_Carregado', 'Usuario', 'Data_Entrada'
+        ).annotate(
+            quantidade_total= Sum('Quantidade_Carregado'),
+            peso_total = Sum(F('Quantidade_Carregado')*F('Peso_Unitario'))
+        ).order_by()
+
+        serializer = LeituraSerializer(queryset, many=True)
+        return serializer.data

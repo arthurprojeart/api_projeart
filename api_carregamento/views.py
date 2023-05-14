@@ -10,7 +10,7 @@ from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics, status
 from django.db.models import Q
 from api_carregamento.models import  Romaneio, Pecas #Carregamento,
-from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer #CarregamentoSerializer, UserSerializer
+from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer, PecasLeiturasSerializer #CarregamentoSerializer, UserSerializer
 
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -117,10 +117,26 @@ class PecasRomaneio(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
     # Parâmetro - romaneio_id
-    def get(self, request,format=None):
-        querypecas = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
-        serializer = PecasSerializer(querypecas, many=True)
+    def get(self, request, format=None):
+        queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id')).values(
+                'romaneio_id', 
+                'Usuario',
+                'Ordem_Fabricacao',
+                'Nome_Peca',
+                'ID_Obra', 
+                'Nome_Obra', 
+                'ID_Trecho',
+                'Nome_Trecho',
+                'Desenho',
+                'Marca',
+                #'quantidade_total',
+        ).annotate(
+            quantidade_total= Sum('Quantidade_Carregado'),
+        ).order_by()
+        #print(queryset)
+        serializer = PecasLeiturasSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
     # Parâmetros JSON - Ordem_Fabricacao, romaneio_id, Usuario, Quantidade_Carregado    
     def post(self, request, format=None):
         peca = dw_connect.query_get_ordem(request.data.get('Ordem_Fabricacao'))
@@ -158,18 +174,31 @@ class PecasRecebimento(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from django.db.models import Sum
+from django.db.models import F
 class PecasTeste(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        queryset = Romaneio.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
-        serializer = RomaneioTrechosSerializer(queryset, many=True)
+        queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id')).values(
+                #'romaneio_id', 
+                'Usuario',
+                'Ordem_Fabricacao',
+                'Nome_Peca',
+                'ID_Obra', 
+                'Nome_Obra', 
+                'ID_Trecho',
+                'Nome_Trecho',
+                'Desenho',
+                'Marca',
+                #'quantidade_total',
+        ).annotate(
+            quantidade_total= Sum('Quantidade_Carregado'),
+        ).order_by()
+
+        # print(queryset)
+        # print(type(queryset))
+        #queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
+        serializer = PecasLeiturasSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-# class PecasTeste(generics.ListAPIView):
-#     serializer_class = RomaneioTrechosSerializer
-
-#     def get_queryset(self):
-#         queryset = Romaneio.objects.filter(romaneio_id=1)
-#         return queryset.prefetch_related('romaneio_id')
+                   

@@ -201,8 +201,9 @@ LEFT JOIN TbOpl Tre (NOLOCK) on  Tre.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef
 							AND Mar.CdCrc = 249 -- Marca
 
 WHERE
-	Lot.TpLotSta = 1 -- Apenas em Aberto
-	And Lot.CdObj = 40766 --OF - PROJEART
+	--Lot.TpLotSta = 1 -- Apenas em Aberto
+	--And 
+    Lot.CdObj = 40766 --OF - PROJEART
     And Lot.CdLot = {ordem_certa}
 
 --and Obj.CdObj003 = 39385 -- Apenas COMPONENTES
@@ -227,7 +228,7 @@ GROUP BY
         ------------------------------------------------------------------''')
     
     rows = cursor.fetchall()
-
+    print(rows)
     rows = list(rows[0]) 
     df_peca = pd.DataFrame(rows, index=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','QuantidadeProduzida', 'Quantidade_Total','ID_TbRomaneio'])
     #df_peca.iloc[7] = pd.to_numeric(df_peca.iloc[7])
@@ -246,4 +247,4 @@ GROUP BY
 
 
 
-#print(query_get_ordem(500634))
+#print(query_get_ordem(607640))
