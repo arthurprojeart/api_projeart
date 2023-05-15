@@ -133,7 +133,7 @@ class PecasRomaneio(APIView):
         ).annotate(
             quantidade_total= Sum('Quantidade_Carregado'),
         ).order_by()
-        #print(queryset)
+
         serializer = PecasLeiturasSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -163,6 +163,8 @@ class PecasRecebimento(APIView):
         
         queryset = Romaneio.objects.filter(ID_Obra=request.GET.get('ID_Obra'))
         serializer = PecasRecebimentoSerializer(queryset, many=True)
+        #serializer.is_valid(raise_exception=False)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
