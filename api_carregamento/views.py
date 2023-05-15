@@ -66,8 +66,7 @@ class RomaneioLista(APIView):
                 ID_Status = ''
             print(ID_Obra, ID_Status)
             if ID_Obra != 0 or ID_Status != '':
-                print('entrou')
-                queryset = Romaneio.objects.filter(Q(ID_Obra=ID_Obra) | Q(ID_Status=ID_Status))
+                queryset = Romaneio.objects.filter(Q(ID_Obra=ID_Obra) & Q(ID_Status=ID_Status))
             else:
                 queryset = Romaneio.objects.all()
             serializer = RomaneioTrechosSerializer(queryset, many=True)
@@ -120,7 +119,6 @@ class PecasRomaneio(APIView):
     def get(self, request, format=None):
         queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id')).values(
                 'romaneio_id', 
-                'Usuario',
                 'Ordem_Fabricacao',
                 'Nome_Peca',
                 'ID_Obra', 
@@ -129,6 +127,8 @@ class PecasRomaneio(APIView):
                 'Nome_Trecho',
                 'Desenho',
                 'Marca',
+                'Peso_Unitario',
+
                 #'quantidade_total',
         ).annotate(
             quantidade_total= Sum('Quantidade_Carregado'),

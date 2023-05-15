@@ -161,6 +161,7 @@ class RomaneioTrechosSerializer(serializers.ModelSerializer):
 class LeituraSerializer(serializers.Serializer):
     #romaneio_id = serializers.IntegerField()
     leitura_id = serializers.IntegerField()
+    Usuario = serializers.CharField()
     Ordem_Fabricacao = serializers.IntegerField()
     quantidade_total = serializers.DecimalField(max_digits=10, decimal_places=2)
     Data_Entrada = serializers.DateTimeField()
@@ -170,12 +171,12 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
     quantidade_total = serializers.IntegerField()
     romaneio_id = serializers.IntegerField(read_only=True)
 
+
     class Meta:
         model = Pecas
         # fields = '__all__'
         fields = [
                   'romaneio_id', 
-                  'Usuario',
                   'Ordem_Fabricacao',
                   'Nome_Peca',
                   'ID_Obra', 
@@ -189,6 +190,7 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
                   ]
         read_only_fields = [
                             'ID',
+                            'Usuario',
                             #'romaneio_id',
                             'leitura_id', 
                             'Peso_Unitario', 
