@@ -3,24 +3,6 @@ from rest_framework import serializers
 from api_carregamento.models import Romaneio, Pecas#Carregamento, 
 
 
-# class UserSerializer(serializers.ModelSerializer):
-#     carregamento = serializers.PrimaryKeyRelatedField(many=True, queryset=Carregamento.objects.all())
-
-#     class Meta:
-#         model = User
-#         fields = ['id', 'username', 'carregamento']
-
-# class GroupSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = Group
-#         fields = ['url', 'name']
-
-# class CarregamentoSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Carregamento
-#         owner = serializers.ReadOnlyField(source='owner.username')
-#         fields = ['id', 'owner','nome', 'carregamento', 'pecas']
-
 class RomaneioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Romaneio
@@ -58,12 +40,6 @@ class RomaneioAtualizaSerializer(serializers.ModelSerializer):
                             'Usuario_Inicio',
                             ]
 
-
-# class PecasSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Pecas
-#         fields = '__all__'
-
 class PecasSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -82,6 +58,7 @@ class PecasSerializer(serializers.ModelSerializer):
                   'Marca',
                   'Peso_Unitario',
                   'Quantidade_Carregado',
+                  #'Quantidade_Disponivel',
                   'Quantidade_Total',
                   'Data_Entrada',
                   ]
@@ -108,6 +85,7 @@ class RecebimentoSerializer(serializers.ModelSerializer):
                             'Marca',
                             'Peso_Unitario',
                             'Quantidade_Carregado',
+                            'Quantidade_Disponivel',
                             'Quantidade_Total',
                             'Data_Entrada',
                             ]
@@ -170,7 +148,7 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
     leituras_romaneio = serializers.SerializerMethodField()
     quantidade_total = serializers.IntegerField()
     romaneio_id = serializers.IntegerField(read_only=True)
-
+    #quantidade_projeto = serializers.SerializerMethodField()
 
     class Meta:
         model = Pecas
@@ -185,7 +163,9 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
                   'Nome_Trecho',
                   'Desenho',
                   'Marca',
+                  'Peso_Unitario',
                   'quantidade_total',
+                  
                   'leituras_romaneio',
                   ]
         read_only_fields = [
@@ -193,7 +173,6 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
                             'Usuario',
                             #'romaneio_id',
                             'leitura_id', 
-                            'Peso_Unitario', 
                             'Data_Entrada',
                             'Quantidade_Total',
                             'Quantidade_Carregado',
@@ -208,9 +187,11 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
             quantidade_total= Sum('Quantidade_Carregado'),
             peso_total = Sum(F('Quantidade_Carregado')*F('Peso_Unitario'))
         ).order_by()
-
         serializer = LeituraSerializer(queryset, many=True)
         return serializer.data
+    
+    def get_quantidade_projeto(self,obj):
+        return obj.Quantidade_Total
 
 class PecasRecebimentoSerializer(serializers.ModelSerializer):
     pecas_romaneio = serializers.SerializerMethodField()

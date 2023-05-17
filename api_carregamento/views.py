@@ -52,30 +52,28 @@ class RomaneioLista(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        
-        if request.GET.get('ID_Obra') is not None:
-            ID_Obra = request.GET.get('ID_Obra')
-            ID_Status = request.GET.get('ID_Status')
-            if len(ID_Obra)>0:
-                ID_Obra = request.GET.get('ID_Obra')
-            else:
-                ID_Obra  = 0
-            if len(ID_Status)>0:
-                ID_Status = request.GET.get('ID_Status')
-            else:
-                ID_Status = ''
-            print(ID_Obra, ID_Status)
-            if ID_Obra != 0 or ID_Status != '':
-                queryset = Romaneio.objects.filter(Q(ID_Obra=ID_Obra) & Q(ID_Status=ID_Status))
-            else:
-                queryset = Romaneio.objects.all()
-            serializer = RomaneioTrechosSerializer(queryset, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
 
+        if request.GET.get('ID_Obra') == '':
+            ID_Obra = None
+        else:
+            ID_Obra = request.GET.get('ID_Obra')
+        if request.GET.get('ID_Status') == '':     
+            ID_Status = None
+        else:
+            ID_Status = request.GET.get('ID_Status')
+
+        if ID_Status is None and ID_Obra is not None:
+            queryset = Romaneio.objects.filter(ID_Obra=ID_Obra)
+        elif ID_Obra is None and ID_Status is not None:
+            queryset = Romaneio.objects.filter(ID_Status=ID_Status)
+        elif ID_Obra is not None and ID_Status is not None:
+            queryset = Romaneio.objects.filter(Q(ID_Obra=ID_Obra) & Q(ID_Status=ID_Status))
         else:
             queryset = Romaneio.objects.all()
-            serializer = RomaneioTrechosSerializer(queryset, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = RomaneioTrechosSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        
     def post(self, request, format=None):
         serializer = RomaneioSerializer(data=request.data)
 
@@ -132,6 +130,7 @@ class PecasRomaneio(APIView):
                 #'quantidade_total',
         ).annotate(
             quantidade_total= Sum('Quantidade_Carregado'),
+            
         ).order_by()
 
         serializer = PecasLeiturasSerializer(queryset, many=True)
@@ -150,11 +149,17 @@ class PecasRomaneio(APIView):
             return Response(serializer_pecas.data, status=status.HTTP_201_CREATED)
         return Response(serializer_pecas.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self, request, pk):
-        my_data = Pecas.objects.get(pk=pk)
-        my_data.delete()
+    def delete(self, request):
+        #my_data = Pecas.objects.get(pk=pk)
+        dados = request.data
+        lista_excluir = dados['leitura_id']
+        for leitura in lista_excluir:   
+            queryset = Pecas.objects.filter(leitura_id=leitura)
+            queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+#LISTA DE RECEBIMENTO
+#ENDPOINT 11[GET]
 class PecasRecebimento(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]

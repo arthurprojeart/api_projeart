@@ -35,9 +35,11 @@ class Pecas(models.Model):
     Marca = models.CharField(max_length=10,blank=False)
     Peso_Unitario = models.FloatField(blank=False)
     Quantidade_Carregado = models.IntegerField(blank=False)
+    #Quantidade_Disponivel = models.IntegerField(blank=False)
     Quantidade_Total = models.IntegerField(blank=False)
     Data_Entrada = models.DateTimeField(auto_now_add=True)
     Quantidade_Recebida = models.IntegerField(blank=False)
+
     Usuario_Recebimento = models.CharField(max_length=50,blank=False)
     Data_Recebida = models.DateTimeField(auto_now_add=True)
 
