@@ -10,7 +10,7 @@ from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics, status
 from django.db.models import Q
 from api_carregamento.models import  Romaneio, Pecas #Carregamento,
-from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer, PecasLeiturasSerializer #CarregamentoSerializer, UserSerializer
+from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, LeituraRecebimentoSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer, PecasLeiturasSerializer #CarregamentoSerializer, UserSerializer
 
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -113,6 +113,8 @@ class PecasLista(APIView):
 class PecasRomaneio(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
+    serializer_pecas = PecasSerializer
+    serializer_leituras = LeituraRecebimentoSerializer
     # Parâmetro - romaneio_id
     def get(self, request, format=None):
         queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id')).values(
@@ -142,12 +144,17 @@ class PecasRomaneio(APIView):
         peca['romaneio_id'] = request.data.get('romaneio_id')
         peca['Usuario'] = request.data.get('Usuario')
         peca['Quantidade_Carregado'] = request.data.get('Quantidade_Carregado')
-        serializer_pecas = PecasSerializer(data=peca)
-
-        if serializer_pecas.is_valid():
-            pecas = serializer_pecas.save()
-            return Response(serializer_pecas.data, status=status.HTTP_201_CREATED)
-        return Response(serializer_pecas.errors, status=status.HTTP_400_BAD_REQUEST)
+        print(peca)
+        serializer_pecas = self.serializer_pecas(data=peca)
+        serializer_leituras = self.serializer_leituras(data=peca)
+        if serializer_pecas.is_valid() and serializer_leituras.is_valid() :
+            print('entrei')
+            tabela_pecas = serializer_pecas.save()
+            tabela_leituras = serializer_leituras.save()
+            return Response({'Ordem_Fabricacao':tabela_pecas.Ordem_Fabricacao, 
+                             'leitura_id':tabela_leituras.Ordem_Fabricacao}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer_leituras.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request):
         #my_data = Pecas.objects.get(pk=pk)

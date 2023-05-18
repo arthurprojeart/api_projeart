@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from api_carregamento.models import Romaneio, Pecas#Carregamento, 
+from api_carregamento.models import Romaneio, Pecas, Leitura#Carregamento, 
 
 
 class RomaneioSerializer(serializers.ModelSerializer):
@@ -45,7 +45,7 @@ class PecasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pecas
         fields = [
-                  'leitura_id', 
+                #   'peca_id', 
                   'romaneio_id', 
                   'Usuario',
                   'Ordem_Fabricacao',
@@ -136,8 +136,22 @@ class RomaneioTrechosSerializer(serializers.ModelSerializer):
         serializer = PecasTrechoSerializer(queryset, many=True)
         return serializer.data
 
-class LeituraSerializer(serializers.Serializer):
+class LeituraRecebimentoSerializer(serializers.ModelSerializer):
     #romaneio_id = serializers.IntegerField()
+    class Meta:
+        model = Leitura
+        fields = '__all__'
+        read_only_fields = ['Data_Leitura']
+    # leitura_id = serializers.IntegerField()
+    # peca_id = serializers.IntegerField()
+    # Ordem_Fabricacao = serializers.IntegerField()
+    # Usuario = serializers.CharField()
+    # Quantidade_Carregado = serializers.IntegerField()
+    # Data_Entrada = serializers.DateTimeField()
+
+class LeituraSerializer(serializers.ModelSerializer):
+    #romaneio_id = serializers.IntegerField()
+    
     leitura_id = serializers.IntegerField()
     Usuario = serializers.CharField()
     Ordem_Fabricacao = serializers.IntegerField()
@@ -203,22 +217,22 @@ class PecasRecebimentoSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['ID']
 
-    # def create(self, validated_data):
-    #     pecas_romaneio = validated_data.pop('pecas_romaneio')
-    #     romaneio_instancia = Romaneio.objects.create(**validated_data)
-    #     # romaneio_instancia = super().create(validated_data)
-    #     # if pecas_romaneio:
-    #     #     pecas_serializer = PecasLeiturasSerializer(data=pecas_romaneio)
-    #     #     pecas_serializer.is_valid(raise_exception=True)
-    #     #     pecas_intancancia = pecas_serializer.save()
-    #     #     romaneio_instancia.pecas_romaneio = pecas_intancancia
-    #     #     romaneio_instancia.save()
-    #     for peca in pecas_romaneio:
-    #         leitura_peca = peca.pop('leituras_romaneio')
-    #         pecas = Pecas.objects.create(romaneio_instancia=romaneio_instancia,**leitura_peca)
-    #         for leitura in leitura_peca:
-    #             Pecas.objects.create(pecas=pecas,**leitura)
-    #     return romaneio_instancia
+    def create(self, validated_data):
+        pecas_romaneio = validated_data.pop('pecas_romaneio')
+        romaneio_instancia = Romaneio.objects.create(**validated_data)
+        # romaneio_instancia = super().create(validated_data)
+        # if pecas_romaneio:
+        #     pecas_serializer = PecasLeiturasSerializer(data=pecas_romaneio)
+        #     pecas_serializer.is_valid(raise_exception=True)
+        #     pecas_intancancia = pecas_serializer.save()
+        #     romaneio_instancia.pecas_romaneio = pecas_intancancia
+        #     romaneio_instancia.save()
+        for peca in pecas_romaneio:
+            leitura_peca = peca.pop('leituras_romaneio')
+            pecas = Pecas.objects.create(romaneio_instancia=romaneio_instancia,**leitura_peca)
+            for leitura in leitura_peca:
+                Pecas.objects.create(pecas=pecas,**leitura)
+        return romaneio_instancia
     
     def get_trechos_romaneio(self, obj):
         queryset = Pecas.objects.filter(romaneio_id=obj.romaneio_id).values(
