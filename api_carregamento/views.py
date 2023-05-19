@@ -198,6 +198,7 @@ class PecasTeste(APIView):
                 'Nome_Trecho',
                 'Desenho',
                 'Marca',
+                'Peso_Unitario',
                 #'quantidade_total',
         ).annotate(
             quantidade_total= Sum('Quantidade_Carregado'),

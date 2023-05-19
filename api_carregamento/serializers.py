@@ -144,6 +144,26 @@ class LeituraSerializer(serializers.Serializer):
     quantidade_total = serializers.DecimalField(max_digits=10, decimal_places=2)
     Data_Entrada = serializers.DateTimeField()
 
+class PecasTesteSerializer(serializers.Serializer):
+
+    #leitura_id = serializers.IntegerField()
+    romaneio_id = serializers.IntegerField()
+    #Usuario = serializers.CharField()
+    Ordem_Fabricacao = serializers.IntegerField()
+    Nome_Peca = serializers.CharField()
+    ID_Obra = serializers.IntegerField()
+    Nome_Obra = serializers.CharField()
+    ID_Trecho = serializers.IntegerField()
+    Nome_Trecho = serializers.CharField()
+    Desenho = serializers.CharField()
+    Marca = serializers.CharField()
+    Peso_Unitario = serializers.FloatField()
+    quantidade_total = serializers.IntegerField()
+    # Quantidade_Carregado = serializers.IntegerField()
+    # Quantidade_Total = serializers.IntegerField()
+    # Data_Entrada = serializers.DateTimeField()
+
+
 class PecasLeiturasSerializer(serializers.ModelSerializer):
     leituras_romaneio = serializers.SerializerMethodField()
     quantidade_total = serializers.IntegerField()
@@ -196,30 +216,33 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
 class PecasRecebimentoSerializer(serializers.ModelSerializer):
     pecas_romaneio = serializers.SerializerMethodField()
     trechos_romaneio = serializers.SerializerMethodField()
+    # leituras_romaneio = PecasLeiturasSerializer(many=True, read_only=True)
+    # leituras_romaneio = serializers.SerializerMethodField()
     # pecas_romaneio = PecasLeiturasSerializer(many=True)#, read_only=True)
     #Ordem_Fabricacao = PecasSerializer()
     class Meta:
         model = Romaneio
-        fields = '__all__'
-        read_only_fields = ['ID']
-
-    # def create(self, validated_data):
-    #     pecas_romaneio = validated_data.pop('pecas_romaneio')
-    #     romaneio_instancia = Romaneio.objects.create(**validated_data)
-    #     # romaneio_instancia = super().create(validated_data)
-    #     # if pecas_romaneio:
-    #     #     pecas_serializer = PecasLeiturasSerializer(data=pecas_romaneio)
-    #     #     pecas_serializer.is_valid(raise_exception=True)
-    #     #     pecas_intancancia = pecas_serializer.save()
-    #     #     romaneio_instancia.pecas_romaneio = pecas_intancancia
-    #     #     romaneio_instancia.save()
-    #     for peca in pecas_romaneio:
-    #         leitura_peca = peca.pop('leituras_romaneio')
-    #         pecas = Pecas.objects.create(romaneio_instancia=romaneio_instancia,**leitura_peca)
-    #         for leitura in leitura_peca:
-    #             Pecas.objects.create(pecas=pecas,**leitura)
-    #     return romaneio_instancia
+        fields = ['romaneio_id',
+                  'pecas_romaneio',
+                #   'leituras_romaneio',
+                  'Nome_Motorista',
+                  'Placa_Carro', 
+                  'ID_Obra',
+                  'trechos_romaneio',
+                  'Data_Inicio', 
+                  'Usuario_Inicio',
+                  'Data_Final',
+                  'Usuario_Final',
+                  'ID_Status']
+        read_only_fields = ['ID', 'Data_Final']
     
+    # def create(self, validated_data):
+    #         leituras_romaneio = validated_data.pop('leituras_romaneio')
+    #         pecas_instancia = Pecas.objects.create(**validated_data)
+    #         for peca in leituras_romaneio:
+    #             Pecas.objects.create(user=pecas_instancia,**peca)
+    #         return pecas_instancia
+
     def get_trechos_romaneio(self, obj):
         queryset = Pecas.objects.filter(romaneio_id=obj.romaneio_id).values(
             'romaneio_id', 'ID_Trecho', 'Nome_Trecho',
@@ -227,13 +250,46 @@ class PecasRecebimentoSerializer(serializers.ModelSerializer):
             quantidade_total= Sum('Quantidade_Carregado'),
             peso_total = Sum(F('Quantidade_Carregado')*F('Peso_Unitario'))
         ).order_by()
-
+        # print(queryset)
         serializer = PecasTrechoSerializer(queryset, many=True)
         return serializer.data
     
     def get_pecas_romaneio(self, obj):
 
-        queryset = Pecas.objects.filter(romaneio_id=obj.romaneio_id)
-        serializer = PecasLeiturasSerializer(queryset, many=True)
-        return serializer.data
+        queryset_pecas = Pecas.objects.filter(romaneio_id=obj.romaneio_id).values(
+                'romaneio_id', 
+                'Ordem_Fabricacao',
+                'Nome_Peca',
+                'ID_Obra', 
+                'Nome_Obra', 
+                'ID_Trecho',
+                'Nome_Trecho',
+                'Desenho',
+                'Marca',
+                'Peso_Unitario',
+
+                #'quantidade_total',
+        ).annotate(
+            quantidade_total= Sum('Quantidade_Carregado'),
+            
+        ).order_by()
+
+
+        queryset_leituras = Pecas.objects.filter(romaneio_id=obj.romaneio_id).values(
+            'leitura_id', 'Ordem_Fabricacao', 'Quantidade_Carregado', 'Usuario', 'Data_Entrada'
+        ).annotate(
+            quantidade_total= Sum('Quantidade_Carregado'),
+            peso_total = Sum(F('Quantidade_Carregado')*F('Peso_Unitario'))
+        ).order_by()
+        
+        serializer_leitura = LeituraSerializer(queryset_leituras, many=True)
+        serializer_pecas = PecasTesteSerializer(queryset_pecas, many=True)
+
+        dict_pecas = dict(serializer_pecas.data[0])
+        ## Fazer um for para iterar apenas os registros de uma ordem especial
+        dict_pecas['leituras_romaneio'] = serializer_leitura.data
+
+        return dict_pecas
+
+    
     
