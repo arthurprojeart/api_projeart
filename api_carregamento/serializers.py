@@ -201,7 +201,7 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
                             ]
     def get_leituras_romaneio(self, obj):
 
-        queryset = Pecas.objects.filter(Ordem_Fabricacao = obj['Ordem_Fabricacao']).values(
+        queryset = Pecas.objects.filter(Ordem_Fabricacao = obj['Ordem_Fabricacao'], romaneio_id=obj['romaneio_id']).values(
             'leitura_id', 'Ordem_Fabricacao', 'Quantidade_Carregado', 'Usuario', 'Data_Entrada'
         ).annotate(
             quantidade_total= Sum('Quantidade_Carregado'),
