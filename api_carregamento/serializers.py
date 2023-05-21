@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from api_carregamento.models import Romaneio, Pecas#Carregamento, 
+from api_carregamento.models import Romaneio, Pecas, Ordens, LeiturasCarregamento#Carregamento, 
 
 
 class RomaneioSerializer(serializers.ModelSerializer):
@@ -138,11 +138,11 @@ class RomaneioTrechosSerializer(serializers.ModelSerializer):
 
 class LeituraSerializer(serializers.Serializer):
     #romaneio_id = serializers.IntegerField()
-    leitura_id = serializers.IntegerField()
+    Leitura_ID = serializers.IntegerField()
     Usuario = serializers.CharField()
     Ordem_Fabricacao = serializers.IntegerField()
-    quantidade_total = serializers.DecimalField(max_digits=10, decimal_places=2)
-    Data_Entrada = serializers.DateTimeField()
+    Quantidade_Carregada = serializers.DecimalField(max_digits=10, decimal_places=2)
+    Data_Carregamento = serializers.DateTimeField()
 
 class PecasTesteSerializer(serializers.Serializer):
 
@@ -162,7 +162,6 @@ class PecasTesteSerializer(serializers.Serializer):
     # Quantidade_Carregado = serializers.IntegerField()
     # Quantidade_Total = serializers.IntegerField()
     # Data_Entrada = serializers.DateTimeField()
-
 
 class PecasLeiturasSerializer(serializers.ModelSerializer):
     leituras_romaneio = serializers.SerializerMethodField()
@@ -185,7 +184,6 @@ class PecasLeiturasSerializer(serializers.ModelSerializer):
                   'Marca',
                   'Peso_Unitario',
                   'quantidade_total',
-                  
                   'leituras_romaneio',
                   ]
         read_only_fields = [
@@ -291,5 +289,84 @@ class PecasRecebimentoSerializer(serializers.ModelSerializer):
 
         return dict_pecas
 
+class OrdensSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ordens
+        fields = [
+                  'Ordem_Fabricacao',
+                  'romaneio_id', 
+                  'Usuario',
+                  'Nome_Peca',
+                  'ID_Obra', 
+                  'Nome_Obra', 
+                  'ID_Trecho',
+                  'Nome_Trecho',
+                  'Desenho',
+                  'Marca',
+                  'Peso_Unitario',
+                  'Quantidade_Produzida',
+                  'Quantidade_Projeto'
+                  ]
+        read_only_fields = ['ID']
+
+class LeiturasCarregamentoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LeiturasCarregamento
+        fields = [
+                #   'Leitura_ID',
+                  'Ordem_Fabricacao', 
+                  'romaneio_id',
+                  'Usuario',
+                  'Quantidade_Carregada', 
+                  'Data_Carregamento', 
+                  ]
+        read_only_fields = ['Leitura_ID']
+
+class PecasLeiturasCarregamentoSerializer(serializers.ModelSerializer):
+    Leituras_Carregamento = serializers.SerializerMethodField()
+    Quantidade_Total = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ordens
+        fields = [
+                    'Ordem_Fabricacao',
+                    'romaneio_id',
+                    'Leituras_Carregamento',
+                    'Usuario',
+                    'Nome_Peca',
+                    'ID_Obra',
+                    'Nome_Obra',
+                    'ID_Trecho',
+                    'Nome_Trecho',
+                    'Desenho',
+                    'Marca',
+                    'Peso_Unitario',
+                    'Quantidade_Produzida',
+                    'Quantidade_Projeto',
+                    'Quantidade_Total'
+        ]
+        # read_only_fields = ['Leitura_ID']
+
+    # def create(self, validated_data):
+    #         Leitura_ID = validated_data.pop('Leitura_ID')
+    #         leituras_instancia = Ordens.objects.create(**validated_data)
+    #         for leitura in Leitura_ID:
+    #             LeiturasCarregamento.objects.create(user=leituras_instancia,**leitura)
+    #         return leituras_instancia
+
+    def get_Leituras_Carregamento(self, obj):
+        # print(type(obj.Ordem_Fabricacao))
+        print(type(obj))
+        queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao, romaneio_id=obj.romaneio_id)
+        print(queryset)
+        serializer = LeituraSerializer(queryset, many=True)
+        # dict_pecas = dict(serializer.data[0])
+        return serializer.data
     
-    
+    def get_Quantidade_Total(self,obj):
+        
+        queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao)
+        Quantidade_Total = sum([valor.Quantidade_Carregada for valor in queryset])
+        return Quantidade_Total

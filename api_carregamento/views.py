@@ -9,9 +9,9 @@ from rest_framework.views import APIView
 from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics, status
 from django.db.models import Q
-from api_carregamento.models import  Romaneio, Pecas #Carregamento,
-from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer, PecasLeiturasSerializer #CarregamentoSerializer, UserSerializer
-
+from api_carregamento.models import  Romaneio, Pecas, Ordens #Carregamento,
+from api_carregamento.serializers import RomaneioSerializer, PecasSerializer, PecasLeiturasCarregamentoSerializer, OrdensSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer, PecasLeiturasSerializer, LeiturasCarregamentoSerializer #CarregamentoSerializer, UserSerializer
+from rest_framework.exceptions import ValidationError
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 import dw_connect, db_connect
@@ -97,16 +97,6 @@ class RomaneioAtualiza(APIView):
         my_data = Romaneio.objects.get(pk=pk)
         my_data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-# ENDPOINT 7[POST], 9[GET]
-class PecasLista(APIView):
-    authentication_classes = [JWTAuthentication, SessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, format=None):
-        queryset = Pecas.objects.all()
-        serializer = PecasSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
     
 #LISTA COM PEÇAS DE UM ROMANEIO
 #ENDPOINT 7[POST], 9[GET], 10[DELETE]
@@ -114,40 +104,70 @@ class PecasRomaneio(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
     # Parâmetro - romaneio_id
-    def get(self, request, format=None):
-        queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id')).values(
-                'romaneio_id', 
-                'Ordem_Fabricacao',
-                'Nome_Peca',
-                'ID_Obra', 
-                'Nome_Obra', 
-                'ID_Trecho',
-                'Nome_Trecho',
-                'Desenho',
-                'Marca',
-                'Peso_Unitario',
+    # def get(self, request, format=None):
+    #     queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id')).values(
+    #             'romaneio_id', 
+    #             'Ordem_Fabricacao',
+    #             'Nome_Peca',
+    #             'ID_Obra', 
+    #             'Nome_Obra', 
+    #             'ID_Trecho',
+    #             'Nome_Trecho',
+    #             'Desenho',
+    #             'Marca',
+    #             'Peso_Unitario',
 
-                #'quantidade_total',
-        ).annotate(
-            quantidade_total= Sum('Quantidade_Carregado'),
+    #             #'quantidade_total',
+    #     ).annotate(
+    #         quantidade_total= Sum('Quantidade_Carregado'),
             
-        ).order_by()
+    #     ).order_by()
 
-        serializer = PecasLeiturasSerializer(queryset, many=True)
+    #     serializer = PecasLeiturasSerializer(queryset, many=True)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, format=None):
+        # queryset = Ordens.objects.filter(romaneio_id=request.GET.get('romaneio_id')).values(
+        #         'romaneio_id', 
+        #         'Ordem_Fabricacao',
+        #         'Nome_Peca',
+        #         'ID_Obra', 
+        #         'Nome_Obra', 
+        #         'ID_Trecho',
+        #         'Nome_Trecho',
+        #         'Desenho',
+        #         'Marca',
+        #         'Peso_Unitario',
+
+        #         #'quantidade_total',
+        # ).annotate(
+        #     Quantidade_Carregada_Total= Sum('Quantidade_Carregada'),
+            
+        # ).order_by()
+        queryset = Ordens.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
+        serializer = PecasLeiturasCarregamentoSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
     # Parâmetros JSON - Ordem_Fabricacao, romaneio_id, Usuario, Quantidade_Carregado    
     def post(self, request, format=None):
         peca = dw_connect.query_get_ordem(request.data.get('Ordem_Fabricacao'))
         peca['romaneio_id'] = request.data.get('romaneio_id')
         peca['Usuario'] = request.data.get('Usuario')
-        peca['Quantidade_Carregado'] = request.data.get('Quantidade_Carregado')
-        serializer_pecas = PecasSerializer(data=peca)
+        peca['Quantidade_Carregada'] = request.data.get('Quantidade_Carregada')
 
-        if serializer_pecas.is_valid():
-            pecas = serializer_pecas.save()
-            return Response(serializer_pecas.data, status=status.HTTP_201_CREATED)
-        return Response(serializer_pecas.errors, status=status.HTTP_400_BAD_REQUEST)
+        query_teste = Ordens.objects.filter(Ordem_Fabricacao=request.data.get('Ordem_Fabricacao')).exists()
+        serializer_leituras = LeiturasCarregamentoSerializer(data=peca)
+
+        if query_teste:
+            pk = request.data.get('Ordem_Fabricacao')
+            instance = Ordens.objects.get(pk=pk)
+            serializer_ordens = OrdensSerializer(instance, peca)
+        else:
+            serializer_ordens = OrdensSerializer(data=peca)
+
+        if serializer_ordens.is_valid() and serializer_leituras.is_valid():
+            serializer_ordens.save()
+            serializer_leituras.save()
+            return Response({'Ordens': serializer_ordens.data, 'LeiturasCarregamento': serializer_leituras.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer_leituras.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request):
         #my_data = Pecas.objects.get(pk=pk)
@@ -182,31 +202,39 @@ class PecasRecebimento(APIView):
 
 from django.db.models import Sum
 from django.db.models import F
+
 class PecasTeste(APIView):
+
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
-        queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id')).values(
-                #'romaneio_id', 
-                'Usuario',
-                'Ordem_Fabricacao',
-                'Nome_Peca',
-                'ID_Obra', 
-                'Nome_Obra', 
-                'ID_Trecho',
-                'Nome_Trecho',
-                'Desenho',
-                'Marca',
-                'Peso_Unitario',
-                #'quantidade_total',
-        ).annotate(
-            quantidade_total= Sum('Quantidade_Carregado'),
-        ).order_by()
+    # Parâmetros JSON - Ordem_Fabricacao, romaneio_id, Usuario, Quantidade_Carregado    
+    def post(self, request, format=None):
+        
+        peca = dw_connect.query_get_ordem(request.data.get('Ordem_Fabricacao'))
+        peca['romaneio_id'] = request.data.get('romaneio_id')
+        peca['Usuario'] = request.data.get('Usuario')
+        # peca['Quantidade_Produzida'] = request.data.get('Quantidade_Produzida')
+        peca['Quantidade_Carregada'] = request.data.get('Quantidade_Carregada')
+        # peca['Quantidade_Projeto'] = request.data.get('Quantidade_Projeto')
 
-        # print(queryset)
-        # print(type(queryset))
-        #queryset = Pecas.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
-        serializer = PecasLeiturasSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-                   
+
+        query_teste = Ordens.objects.filter(Ordem_Fabricacao=request.data.get('Ordem_Fabricacao')).exists()
+        serializer_leituras = LeiturasCarregamentoSerializer(data=peca)
+        print(serializer_leituras)
+        if query_teste:
+            pk = request.data.get('Ordem_Fabricacao')
+            instance = Ordens.objects.get(pk=pk)
+            serializer_ordens = OrdensSerializer(instance, peca)
+        else:
+            serializer_ordens = OrdensSerializer(data=peca)
+
+        if serializer_ordens.is_valid() and serializer_leituras.is_valid():
+            serializer_ordens.save()
+            serializer_leituras.save()
+            print(serializer_leituras.data)
+            return Response({'Ordens': serializer_ordens.data, 'LeiturasCarregamento': serializer_leituras.data}, status=status.HTTP_201_CREATED)
+        print(serializer_leituras)
+        return Response(serializer_leituras.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  

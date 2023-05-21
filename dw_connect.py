@@ -228,9 +228,9 @@ GROUP BY
         ------------------------------------------------------------------''')
     
     rows = cursor.fetchall()
-    print(rows)
+    # print(rows)
     rows = list(rows[0]) 
-    df_peca = pd.DataFrame(rows, index=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','QuantidadeProduzida', 'Quantidade_Total','ID_TbRomaneio'])
+    df_peca = pd.DataFrame(rows, index=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','Quantidade_Produzida', 'Quantidade_Projeto','ID_TbRomaneio'])
     #df_peca.iloc[7] = pd.to_numeric(df_peca.iloc[7])
 
     if df_peca.iloc[6][0] is None:
