@@ -72,8 +72,8 @@ class Ordens(models.Model):
 class LeiturasCarregamento(models.Model):
 
     Leitura_ID = models.BigAutoField(primary_key=True)
-    # Ordem_Fabricacao = models.ForeignKey(Ordens, on_delete=models.CASCADE , db_column='Ordem_Fabricacao', related_name='ordens_romaneio')
-    Ordem_Fabricacao = models.IntegerField(blank=False)
+    Ordem_Fabricacao = models.ForeignKey(Ordens, on_delete=models.CASCADE , db_column='Ordem_Fabricacao', related_name='ordensfabricacao')
+    # Ordem_Fabricacao = models.IntegerField(blank=False)
     romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
     Quantidade_Carregada = models.IntegerField(blank=False)
@@ -86,11 +86,12 @@ class LeiturasCarregamento(models.Model):
 class LeiturasRecebimento(models.Model):
 
     Leitura_ID = models.BigAutoField(primary_key=True)
-    Ordem_Fabricacao = models.IntegerField(blank=False)
+    Ordem_Fabricacao = models.ForeignKey(Ordens, on_delete=models.CASCADE , db_column='Ordem_Fabricacao', related_name='Leituras_Recebimento')
+    # Ordem_Fabricacao = models.IntegerField(blank=False)
     romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
-    Quantidade_Carregada = models.IntegerField(blank=False)
-    Data_Recebida = models.DateTimeField(auto_now_add=True)
+    Quantidade_Recebida = models.IntegerField(blank=False)
+    Data_Recebimento = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         managed = False

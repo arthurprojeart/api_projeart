@@ -69,7 +69,7 @@ def query_get_peca(ordem_ou_nome):
 
     if type(ordem_ou_nome) is int:
         ordem = ordem_ou_nome
-        nome = ''
+        nome = '@@@@@@@@@@@@@'
     
     else:
         nome = ordem_ou_nome
@@ -88,6 +88,7 @@ def query_get_peca(ordem_ou_nome):
 ,	Desenho = OplDes.TtOpl
 ,	PesoUnitario = Uap.QtUapLiq
 ,	QuantidadeProduzida = Lot.QtLotPrdUap
+,   QuantidadeTotal = Lot.QtLotUap
 
 FROM TbLot Lot 
 left join	TbObj Obj on Obj.CdObj = Lot.CdObjPrd 
@@ -115,8 +116,9 @@ LEFT JOIN TbOpl Tre (NOLOCK) on  Tre.CdLot = CONVERT(Int, SUBSTRING(Obt.NrOplRef
 							AND Mar.CdCrc = 249 -- Marca
 
 WHERE
-	Lot.TpLotSta = 1 -- Apenas em Aberto
-	And Lot.CdObj = 40766 --OF - PROJEART
+	--Lot.TpLotSta = 1 -- Apenas em Aberto
+	--And 
+    Lot.CdObj = 40766 --OF - PROJEART
     And (Lot.CdLot  like '%{ordem}%' or ObjPrd.NmObj like '%{nome}%')
 
 --and Obj.CdObj003 = 39385 -- Apenas COMPONENTES
@@ -145,8 +147,7 @@ GROUP BY
         lista_geral = []
         for i in range(len(rows)):
             lista_geral.append(list(rows[i]))
-        
-        df_peca = pd.DataFrame(lista_geral, columns=['OrdemDeFabricacao', 'NomePeca','Obra','IdObra','Trecho','IdTrecho','Marca','Desenho','PesoUnitario','QuantidadeProduzida'])
+        df_peca = pd.DataFrame(lista_geral, columns=['OrdemDeFabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','Quantidade_Produzida', 'Quantidade_Projeto'])
         #df_peca = pd.DataFrame(lista_geral)
         #df_peca = df_peca.transpose()
         peca_json = df_peca.to_json(orient="records", force_ascii=False)
@@ -247,4 +248,4 @@ GROUP BY
 
 
 
-#print(query_get_ordem(607640))
+# print(query_get_peca(647196))
