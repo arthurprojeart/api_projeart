@@ -160,11 +160,35 @@ class PecasRecebimento(APIView):
     
     # EP 12
     def post(self, request, format=None):
-        serializer_recebimento = LeituraRecebimentoSerializer(data=request.data)
-        if serializer_recebimento.is_valid():
-            serializer_recebimento.save()
-            return Response(serializer_recebimento.data, status=status.HTTP_201_CREATED)
-        return Response(serializer_recebimento.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     serializer_recebimento = LeituraRecebimentoSerializer(data=request.data)
+    #     if serializer_recebimento.is_valid():
+    #         serializer_recebimento.save()
+    #         return Response(serializer_recebimento.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer_recebimento.errors, status=status.HTTP_400_BAD_REQUEST)
+        peca = dw_connect.query_get_ordem(request.data.get('Ordem_Fabricacao'))
+        peca['romaneio_id'] = request.data.get('romaneio_id')
+        peca['Usuario'] = request.data.get('Usuario')
+        peca['Quantidade_Recebida'] = request.data.get('Quantidade_Recebida')
+
+        query_teste = Ordens.objects.filter(Ordem_Fabricacao=request.data.get('Ordem_Fabricacao')).exists()
+        # print(query_teste)
+        
+        # print(serializer_leituras)
+        if query_teste:
+            pk = request.data.get('Ordem_Fabricacao')
+            instance = Ordens.objects.get(pk=pk)
+            serializer_ordens = OrdensSerializer(instance, peca)
+        else:
+            serializer_ordens = OrdensSerializer(data=peca)
+        # print(serializer_ordens)
+        serializer_leituras = LeituraRecebimentoSerializer(data=peca)
+        
+        if serializer_ordens.is_valid():
+            serializer_ordens.save()
+            if serializer_leituras.is_valid():
+                serializer_leituras.save()
+            return Response({'Ordens': serializer_ordens.data, 'LeiturasRecebimento': serializer_leituras.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer_leituras.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
         my_data = Pecas.objects.get(pk=pk)
