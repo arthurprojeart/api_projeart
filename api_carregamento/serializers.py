@@ -126,7 +126,7 @@ class LeituraSerializer(serializers.Serializer):
     #romaneio_id = serializers.IntegerField()
     Leitura_ID = serializers.IntegerField()
     Usuario = serializers.CharField()
-    Ordem_Fabricacao = serializers.IntegerField()
+    # Ordem_Fabricacao = serializers.IntegerField()
     Quantidade_Carregada = serializers.DecimalField(max_digits=10, decimal_places=2)
     Data_Carregamento = serializers.DateTimeField()
 
@@ -312,18 +312,38 @@ class LeiturasCarregamentoSerializer(serializers.ModelSerializer):
 
 class PecasLeiturasCarregamentoSerializer(serializers.ModelSerializer):
     Leituras_Carregamento = serializers.SerializerMethodField()
-    Quantidade_Total = serializers.SerializerMethodField()
-
+    Quantidade_Carregada = serializers.SerializerMethodField()
+    # Ordem_Fabricacao = serializers.IntegerField(source='Ordem_Fabricacao.id')
+    
     class Meta:
         model = Ordens
         fields = '__all__'
+        # fields = [
+        #           'Ordem_Fabricacao',
+        #           'romaneio_id', 
+        #           'Usuario',
+        #           'Nome_Peca',
+        #           'ID_Obra', 
+        #           'Nome_Obra', 
+        #           'ID_Trecho',
+        #           'Nome_Trecho',
+        #           'Desenho',
+        #           'Marca',
+        #           'Peso_Unitario',
+        #           'Quantidade_Produzida',
+        #           'Quantidade_Projeto',
+        #           'Quantidade_Carregada',
+        #           'Leituras_Carregamento',
+        #           ]
 
     def get_Leituras_Carregamento(self, obj):
+        # print(type(obj.Ordem_Fabricacao))
+        # print(obj.Ordem_Fabricacao)
         queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao, romaneio_id=obj.romaneio_id)
         serializer = LeituraSerializer(queryset, many=True)
         return serializer.data
     
-    def get_Quantidade_Total(self,obj):
+    def get_Quantidade_Carregada(self,obj):
         queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao)
         Quantidade_Total = sum([valor.Quantidade_Carregada for valor in queryset])
         return Quantidade_Total

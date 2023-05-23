@@ -107,6 +107,7 @@ class PecasRomaneio(APIView):
     def get(self, request, format=None):
         queryset = Ordens.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
         serializer = PecasLeiturasCarregamentoSerializer(queryset, many=True)
+        # serializer = OrdensSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     # Parâmetros JSON - Ordem_Fabricacao, romaneio_id, Usuario, Quantidade_Carregado    
