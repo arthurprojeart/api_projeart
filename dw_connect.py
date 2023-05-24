@@ -147,13 +147,18 @@ GROUP BY
         lista_geral = []
         for i in range(len(rows)):
             lista_geral.append(list(rows[i]))
-        df_peca = pd.DataFrame(lista_geral, columns=['OrdemDeFabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','Quantidade_Produzida', 'Quantidade_Projeto'])
+
+        df_peca = pd.DataFrame(lista_geral, columns=['Ordem_Fabricacao', 'Nome_Peca','Nome_Obra','ID_Obra','Nome_Trecho','ID_Trecho','Marca','Desenho','Peso_Unitario','Quantidade_Produzida', 'Quantidade_Projeto'])
         #df_peca = pd.DataFrame(lista_geral)
-        #df_peca = df_peca.transpose()
-        peca_json = df_peca.to_json(orient="records", force_ascii=False)
+        #df_peca = df_peca.transpose()\
+        lista_dict = []
+        for i in range(len(df_peca)):
+            lista_dict.append(dict(df_peca.iloc[i]))
+        # print(lista_dict)
+        # peca_json = df_peca.to_json(orient="records", force_ascii=False)
     else:
-        peca_json = 'Não Encontrado'
-    return peca_json
+        lista_dict = 'Não Encontrado'
+    return lista_dict
 
 def query_get_ordem(Ordem_Fabricacao):
 
@@ -248,4 +253,4 @@ GROUP BY
 
 
 
-# print(query_get_peca(647196))
+# print(query_get_peca('TS1-3-01'))

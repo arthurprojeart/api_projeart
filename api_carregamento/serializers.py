@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from api_carregamento.models import Romaneio, Pecas, Ordens, LeiturasCarregamento, LeiturasRecebimento#Carregamento, 
 from django.db.models import Sum        
-from django.db.models import F
+from django.db.models import F, Subquery
 
 class RomaneioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -276,7 +276,7 @@ class PecasRecebimentoSerializer(serializers.ModelSerializer):
         return dict_pecas
 
 class OrdensSerializer(serializers.ModelSerializer):
-
+    
     class Meta:
         model = Ordens
         fields = [
@@ -292,10 +292,40 @@ class OrdensSerializer(serializers.ModelSerializer):
                   'Marca',
                   'Peso_Unitario',
                   'Quantidade_Produzida',
-                  'Quantidade_Projeto'
+                #   'Quantidade_Disponivel',
+                  'Quantidade_Projeto',
                   ]
         read_only_fields = ['ID']
 
+class OrdensTMSerializer(serializers.ModelSerializer):
+    Quantidade_Disponivel = serializers.IntegerField()
+    class Meta:
+        model = Ordens
+        fields = [
+                  'Ordem_Fabricacao',
+                #   'romaneio_id', 
+                #   'Usuario',
+                  'Nome_Peca',
+                  'ID_Obra', 
+                  'Nome_Obra', 
+                  'ID_Trecho',
+                  'Nome_Trecho',
+                  'Desenho',
+                  'Marca',
+                  'Peso_Unitario',
+                  'Quantidade_Produzida',
+                  'Quantidade_Disponivel',
+                  'Quantidade_Projeto',
+                  ]
+        read_only_fields = ['ID']
+
+    # def get_Quantidade_Disponivel(self, obj):
+    #     queryset_quantidade_carregada = LeiturasCarregamento.objects.filter(Ordem_Fabricacao=obj.Ordem_Fabricacao).aggregate(
+    #         Quantidade_Ordem_Carregada = Sum('Quantidade_Carregada')
+    #     )
+    #     Quantidade_Disponivel = obj.Quantidade_Produzida - queryset_quantidade_carregada['Quantidade_Ordem_Carregada']
+    #     return Quantidade_Disponivel
+    
 class LeiturasCarregamentoSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -355,8 +385,9 @@ class LeituraRecebimentoSerializer(serializers.ModelSerializer):
         read_only_fields = ['Leitura_ID', 'Data_Recebimento']
 
 class PecasLeiturasRecebimentoSerializer(serializers.ModelSerializer):
-    Leituras_Recebimento = serializers.SerializerMethodField()
+    # Leituras_Recebimento = serializers.SerializerMethodField()
     Trechos_Romaneio = serializers.SerializerMethodField()
+    Ordens_Recebimento = serializers.SerializerMethodField()
 
     class Meta:
         model = Romaneio
@@ -375,20 +406,6 @@ class PecasLeiturasRecebimentoSerializer(serializers.ModelSerializer):
         #           'ID_Status']
         read_only_fields = ['ID', 'Data_Final']
     
-    # def get_Trechos_Romaneio(self, obj):
-
-    #     ordens = Ordens.objects.all().prefetch_related('Leituras_Recebimento').values(
-    #         'romaneio_id', 'ID_Trecho', 'Nome_Trecho',
-    #     ).annotate(
-    #         Qantidade_Trecho= Sum('Quantidade_Recebida'),
-    #         Peso_Trecho = Sum(F('Quantidade_Recebida')*F('Peso_Unitario'))
-    #     ).order_by()
-
-    #     for ordem in ordens:
-    #         leituras = ordem.Leituras_Recebimento.all()
-    #     serializer = PecasTrechoSerializer(leituras, many=True)
-    #     return serializer.data
-    
     def get_Trechos_Romaneio(self, obj):
         ordens = LeiturasCarregamento.objects.filter(romaneio_id=obj.romaneio_id).select_related('Ordem_Fabricacao').values(
             'romaneio_id', 'Ordem_Fabricacao__ID_Trecho', 'Ordem_Fabricacao__Nome_Trecho',
@@ -401,9 +418,49 @@ class PecasLeiturasRecebimentoSerializer(serializers.ModelSerializer):
         serializer = PecasTrechoSerializer(ordens, many=True)
         return serializer.data
 
-    def get_Leituras_Carregamento(self, obj):
-        queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao, romaneio_id=obj.romaneio_id)
-        serializer = LeituraSerializer(queryset, many=True)
-        return serializer.data
+    # def get_Leituras_Recebimento(self, obj):
+    #     # usando o objeto do romaneio não é possível, porque não tem ordem de fabricaocao
+    #     queryset = LeiturasRecebimento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao, romaneio_id=obj.romaneio_id)
+    #     serializer = LeituraSerializer(queryset, many=True)
+    #     return serializer.data
     
+    # def get_Quantidade_Carregada(self,obj):
+    #     queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao)
+    #     Quantidade_Total = sum([valor.Quantidade_Carregada for valor in queryset])
+    #     return Quantidade_Total
+    
+    # def get_Quantidade_Carregada(self,obj):
+    #     queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao)
+    #     Quantidade_Total = sum([valor.Quantidade_Carregada for valor in queryset])
+    #     return Quantidade_Total
+
+    def get_Ordens_Recebimento(self, obj):
+
+        queryset_quantidade_carregada = LeiturasCarregamento.objects.filter(romaneio_id=obj.romaneio_id).aggregate(
+            Quantidade_Ordem_Carregada = Sum('Quantidade_Carregada')
+        )
+        queryset_quantidade_recebida = LeiturasRecebimento.objects.filter(romaneio_id=obj.romaneio_id).aggregate(
+            Quantidade_Ordem_Recebida = Sum('Quantidade_Recebida')
+        )
+
+        queryset_pecas = Ordens.objects.filter(romaneio_id=obj.romaneio_id)
+        queryset_leituras = LeiturasRecebimento.objects.filter(romaneio_id=obj.romaneio_id)#.values(
+        #     'Leitura_ID', 'Ordem_Fabricacao', 'Quantidade_Recebida', 'Usuario', 'Data_Entrada'
+        # ).annotate(
+        #     quantidade_total= Sum('Quantidade_Carregado'),
+        #     peso_total = Sum(F('Quantidade_Carregado')*F('Peso_Unitario'))
+        # ).order_by()
+        
+        serializer_leitura = LeituraRecebimentoSerializer(queryset_leituras, many=True)
+        serializer_pecas = OrdensSerializer(queryset_pecas, many=True)
+
+        dict_pecas = dict(serializer_pecas.data[0])
+
+        ## Fazer um for para iterar apenas os registros de uma ordem especia''l
+        dict_pecas['Quantidade_Ordem_Carregada'] = queryset_quantidade_carregada['Quantidade_Ordem_Carregada']
+        dict_pecas['Quantidade_Ordem_Recebida'] = queryset_quantidade_recebida['Quantidade_Ordem_Recebida']
+        dict_pecas['leituras_romaneio'] = serializer_leitura.data
+
+
+        return dict_pecas
     
