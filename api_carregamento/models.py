@@ -22,8 +22,8 @@ class Romaneio(models.Model):
 
 class Pecas(models.Model):
     leitura_id = models.BigAutoField(primary_key=True)
-    romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='pecas_romaneio')
-    #romaneio_id = models.IntegerField(blank=False)
+    # romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='pecas_romaneio')
+    romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
     Ordem_Fabricacao = models.IntegerField(blank=False)
     Nome_Peca = models.CharField(max_length=200,blank=False)
@@ -49,8 +49,8 @@ class Pecas(models.Model):
 
 class Ordens(models.Model):
     Ordem_Fabricacao = models.IntegerField(primary_key=True)
-    # romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='pecas_romaneio')
-    romaneio_id = models.IntegerField(blank=False)
+    romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='pecas_romaneio')
+    # romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
     Nome_Peca = models.CharField(max_length=200,blank=False)
     ID_Obra = models.IntegerField(blank=False)
