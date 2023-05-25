@@ -13,7 +13,9 @@ class Romaneio(models.Model):
     Usuario_Inicio = models.CharField(max_length=100, blank=True, default='')
     Data_Final = models.DateTimeField(auto_now_add=False, blank=True)
     Usuario_Final = models.CharField(max_length=100, blank=True, default='')
-    ID_Status = models.CharField(max_length=20, blank=True, default='')
+    Data_Recebimento = models.DateTimeField(auto_now_add=False, blank=True)
+    Usuario_Recebimento = models.CharField(max_length=100, blank=True, default='')
+    ID_Status = models.CharField(max_length=20, blank=True, default=1)
 
     # Pecas = models.IntegerField(blank=True, default=1)
     class Meta:
@@ -49,7 +51,7 @@ class Pecas(models.Model):
 
 class Ordens(models.Model):
     Ordem_Fabricacao = models.IntegerField(primary_key=True)
-    romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='pecas_romaneio')
+    romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='ordens_romaneio')
     # romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
     Nome_Peca = models.CharField(max_length=200,blank=False)

@@ -17,7 +17,7 @@ class RomaneioSerializer(serializers.ModelSerializer):
                   'Data_Final',
                   'Usuario_Final',
                   'ID_Status']
-        read_only_fields = ['ID', 'Data_Final']
+        read_only_fields = ['ID', 'Data_Final', 'Usuario_Final']
 
 class RomaneioAtualizaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -343,8 +343,9 @@ class LeiturasCarregamentoSerializer(serializers.ModelSerializer):
 class PecasLeiturasCarregamentoSerializer(serializers.ModelSerializer):
     Leituras_Carregamento = serializers.SerializerMethodField()
     Quantidade_Carregada = serializers.SerializerMethodField()
+    # romaneio_id = serializers.IntegerField()
     # Ordem_Fabricacao = serializers.IntegerField(source='Ordem_Fabricacao.id')
-    
+    # romaneio_id = serializers.SerializerMethodField()
     class Meta:
         model = Ordens
         fields = '__all__'
@@ -365,11 +366,13 @@ class PecasLeiturasCarregamentoSerializer(serializers.ModelSerializer):
         #           'Quantidade_Carregada',
         #           'Leituras_Carregamento',
         #           ]
-
+    
     def get_Leituras_Carregamento(self, obj):
         # print(type(obj.Ordem_Fabricacao))
         # print(obj.Ordem_Fabricacao)
-        queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao, romaneio_id=obj.romaneio_id)
+        # print(obj.romaneio_id)
+        queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao)#, romaneio_id=obj.romaneio_id)#obj.romaneio_id)
+    
         serializer = LeituraSerializer(queryset, many=True)
         return serializer.data
     

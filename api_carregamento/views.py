@@ -31,7 +31,7 @@ def obras_lista(request, format=None):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def trechos_lista(request, format=None):
-    obra_id = request.GET['obra_id']
+    obra_id = request.GET['ID_Obra']
     if request.method == 'GET':
         trechos = dw_connect.query_trechos(obra_id)
         return Response(trechos)
@@ -114,7 +114,7 @@ class PecasRomaneio(APIView):
     permission_classes = [IsAuthenticated]
     # Parâmetro - romaneio_id
     def get(self, request, format=None):
-        queryset = Ordens.objects.filter(romaneio_id=request.GET.get('romaneio_id'))
+        queryset = Ordens.objects.filter(romaneio_id=request.GET.get('ID_Romaneio'))
         serializer = PecasLeiturasCarregamentoSerializer(queryset, many=True)
         # serializer = OrdensSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

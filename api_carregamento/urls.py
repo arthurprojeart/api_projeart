@@ -18,7 +18,7 @@ urlpatterns = [
     # ENDPOINT 6[PUT] , ENDPOINT 8[DELETE]
     path('romaneios/<int:pk>/',views.RomaneioAtualiza.as_view()),
     # ENDPOINT 7[POST], 9[GET]
-    path('pecas/',views.PecasRomaneio.as_view()),
+    path('ordens/carregamento/',views.PecasRomaneio.as_view()),
     # ENDPOINT 10[DELETE]
     path('pecas/<int:pk>/',views.PecasRomaneio.as_view()),
     # ENPOINT 11[GET], 12[POST]

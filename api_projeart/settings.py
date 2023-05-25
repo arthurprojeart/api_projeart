@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 from dotenv import load_dotenv  
 import os
 load_dotenv()
@@ -112,7 +113,9 @@ REST_FRAMEWORK = {
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ],
     'DEFAULT_AUTHENTICATION_TOKEN_TIMEOUT': 86400, # set timeout to 24 hours (86400 seconds)
-
+    'SIMPLE_JWT': {
+        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=600),
+    }
 }
 
 AUTHENTICATION_BACKENDS = [
