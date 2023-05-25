@@ -456,16 +456,35 @@ class PecasLeiturasRecebimentoSerializer(serializers.ModelSerializer):
         
         serializer_leitura = LeituraRecebimentoSerializer(queryset_leituras, many=True)
         serializer_pecas = OrdensSerializer(queryset_pecas, many=True)
-
-        dict_pecas = dict(serializer_pecas.data[0])
+        # print(type(serializer_pecas.data[0]))
+        # dict_pecas = dict(serializer_pecas.data)
+        if serializer_pecas.data:
+            teste = serializer_pecas.data[0]
+            dict_pecas = dict(teste)
+            dict_pecas['Quantidade_Ordem_Carregada'] = queryset_quantidade_carregada['Quantidade_Ordem_Carregada']
+            dict_pecas['Quantidade_Ordem_Recebida'] = queryset_quantidade_recebida['Quantidade_Ordem_Recebida']
+            dict_pecas['leituras_romaneio'] = serializer_leitura.data
+            return dict_pecas
+        else:
+    # Handle the case when the list is empty
+            return None 
+        
+        # if serializer_pecas.is_valid():
+        #     print(type(serializer_pecas.data))
+        
+        # else:
+        #     print(type(serializer_pecas.data))
+        #     print(serializer_pecas.errors)
+        
+        # dict_pecas = dict(serializer_pecas_data)
+        # dict_pecas = {item["key"]: item["value"] for item in serializer_pecas.data}
+        
 
         ## Fazer um for para iterar apenas os registros de uma ordem especia''l
-        dict_pecas['Quantidade_Ordem_Carregada'] = queryset_quantidade_carregada['Quantidade_Ordem_Carregada']
-        dict_pecas['Quantidade_Ordem_Recebida'] = queryset_quantidade_recebida['Quantidade_Ordem_Recebida']
-        dict_pecas['leituras_romaneio'] = serializer_leitura.data
 
 
-        return dict_pecas
+
+  
 
 class AtualizaRomaneioRecebimentoSerializer(serializers.ModelSerializer):
     class Meta:
