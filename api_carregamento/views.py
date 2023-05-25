@@ -162,7 +162,8 @@ class PecasRecebimento(APIView):
     permission_classes = [IsAuthenticated]
     # EP 11
     def get(self, request, format=None):
-        queryset = Romaneio.objects.filter(ID_Obra=request.GET.get('ID_Obra'))
+
+        queryset = Romaneio.objects.filter(Q(ID_Obra=request.GET.get('ID_Obra')) & ~Q(ID_Status=1))
         # queryset = Ordens.objects.select_related('LeiturasRecebimento').all()
         serializer = PecasLeiturasRecebimentoSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -243,7 +244,7 @@ class PecasTeste(APIView):
 
     # EP 11
     def get(self, request, format=None):
-        queryset = Romaneio.objects.filter(ID_Obra=request.GET.get('ID_Obra'))
+        queryset = Romaneio.objects.filter(ID_Obra=request.GET.get('ID_Obra'), )
         # queryset = Ordens.objects.select_related('LeiturasRecebimento').all()
         serializer = PecasLeiturasRecebimentoSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
