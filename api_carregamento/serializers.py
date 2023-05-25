@@ -466,4 +466,28 @@ class PecasLeiturasRecebimentoSerializer(serializers.ModelSerializer):
 
 
         return dict_pecas
-    
+
+class AtualizaRomaneioRecebimentoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Romaneio
+        fields = ['romaneio_id',
+                  'Data_Inicio_Recebimento',
+                  'Usuario_Inicio_Recebimento',
+                  'Data_Final_Recebimento',
+                  'Usuario_Final_Recebimento',
+                  'ID_Status'
+                  ]
+        read_only_fields = ['ID', 
+                            'ID_Obra',
+                            'Data_Inicio', 
+                            'Usuario_Inicio', 
+                            'Nome_Motorista',
+                            'Placa_Carro'
+                            'Nome_Motorista',
+                            'Placa_Carro', 
+                            'ID_Obra',
+                            'Data_Inicio', 
+                            'Usuario_Inicio',
+                            'Data_Final',
+                            'Usuario_Final',
+                            ]

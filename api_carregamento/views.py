@@ -10,7 +10,7 @@ from api_carregamento.permissions import IsOwnerOrReadOnly
 from rest_framework import generics, status
 from django.db.models import Q
 from api_carregamento.models import  Romaneio, Pecas, Ordens, LeiturasCarregamento, LeiturasRecebimento #Carregamento,
-from api_carregamento.serializers import RomaneioSerializer, OrdensTMSerializer, PecasLeiturasRecebimentoSerializer,LeituraRecebimentoSerializer,LeituraSerializer, PecasSerializer, PecasLeiturasCarregamentoSerializer, OrdensSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer, PecasLeiturasSerializer, LeiturasCarregamentoSerializer #CarregamentoSerializer, UserSerializer
+from api_carregamento.serializers import RomaneioSerializer, OrdensTMSerializer, PecasLeiturasRecebimentoSerializer,AtualizaRomaneioRecebimentoSerializer, LeituraRecebimentoSerializer,LeituraSerializer, PecasSerializer, PecasLeiturasCarregamentoSerializer, OrdensSerializer, RomaneioAtualizaSerializer, PecasRecebimentoSerializer, RecebimentoSerializer, PecasTrechoSerializer, RomaneioTrechosSerializer, PecasLeiturasSerializer, LeiturasCarregamentoSerializer #CarregamentoSerializer, UserSerializer
 from rest_framework.exceptions import ValidationError
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -239,8 +239,8 @@ class PecasRecebimento(APIView):
         
     # EP 13
     def put(self, request, pk):
-        my_data = Pecas.objects.get(pk=pk)
-        serializer = RecebimentoSerializer(my_data, data=request.data)
+        my_data = Romaneio.objects.get(pk=pk)
+        serializer = AtualizaRomaneioRecebimentoSerializer(my_data, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

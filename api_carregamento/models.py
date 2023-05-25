@@ -13,8 +13,10 @@ class Romaneio(models.Model):
     Usuario_Inicio = models.CharField(max_length=100, blank=True, default='')
     Data_Final = models.DateTimeField(auto_now_add=False, blank=True)
     Usuario_Final = models.CharField(max_length=100, blank=True, default='')
-    Data_Recebimento = models.DateTimeField(auto_now_add=False, blank=True)
-    Usuario_Recebimento = models.CharField(max_length=100, blank=True, default='')
+    Data_Inicio_Recebimento = models.DateTimeField(auto_now_add=False, blank=True)
+    Usuario_Inicio_Recebimento = models.CharField(max_length=100, blank=True, default='')
+    Data_Final_Recebimento = models.DateTimeField(auto_now_add=False, blank=True)
+    Usuario_Final_Recebimento = models.CharField(max_length=100, blank=True, default='')
     ID_Status = models.CharField(max_length=20, blank=True, default=1)
 
     # Pecas = models.IntegerField(blank=True, default=1)
