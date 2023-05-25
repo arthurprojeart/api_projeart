@@ -115,7 +115,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_TOKEN_TIMEOUT': 86400, # set timeout to 24 hours (86400 seconds)
     'SIMPLE_JWT': {
         'ACCESS_TOKEN_LIFETIME': timedelta(minutes=600),
-    }
+    },
+    'JWT_AUTH': {
+        'JWT_EXPIRATION_DELTA': timedelta(minutes=600),
+        # Other JWT configuration options...
+    },
 }
 
 AUTHENTICATION_BACKENDS = [

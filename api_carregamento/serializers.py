@@ -421,70 +421,31 @@ class PecasLeiturasRecebimentoSerializer(serializers.ModelSerializer):
         serializer = PecasTrechoSerializer(ordens, many=True)
         return serializer.data
 
-    # def get_Leituras_Recebimento(self, obj):
-    #     # usando o objeto do romaneio não é possível, porque não tem ordem de fabricaocao
-    #     queryset = LeiturasRecebimento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao, romaneio_id=obj.romaneio_id)
-    #     serializer = LeituraSerializer(queryset, many=True)
-    #     return serializer.data
-    
-    # def get_Quantidade_Carregada(self,obj):
-    #     queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao)
-    #     Quantidade_Total = sum([valor.Quantidade_Carregada for valor in queryset])
-    #     return Quantidade_Total
-    
-    # def get_Quantidade_Carregada(self,obj):
-    #     queryset = LeiturasCarregamento.objects.filter(Ordem_Fabricacao = obj.Ordem_Fabricacao)
-    #     Quantidade_Total = sum([valor.Quantidade_Carregada for valor in queryset])
-    #     return Quantidade_Total
-
     def get_Ordens_Recebimento(self, obj):
 
-        queryset_quantidade_carregada = LeiturasCarregamento.objects.filter(romaneio_id=obj.romaneio_id).aggregate(
-            Quantidade_Ordem_Carregada = Sum('Quantidade_Carregada')
-        )
-        queryset_quantidade_recebida = LeiturasRecebimento.objects.filter(romaneio_id=obj.romaneio_id).aggregate(
-            Quantidade_Ordem_Recebida = Sum('Quantidade_Recebida')
-        )
-
         queryset_pecas = Ordens.objects.filter(romaneio_id=obj.romaneio_id)
-        queryset_leituras = LeiturasRecebimento.objects.filter(romaneio_id=obj.romaneio_id)#.values(
-        #     'Leitura_ID', 'Ordem_Fabricacao', 'Quantidade_Recebida', 'Usuario', 'Data_Entrada'
-        # ).annotate(
-        #     quantidade_total= Sum('Quantidade_Carregado'),
-        #     peso_total = Sum(F('Quantidade_Carregado')*F('Peso_Unitario'))
-        # ).order_by()
-        
-        serializer_leitura = LeituraRecebimentoSerializer(queryset_leituras, many=True)
         serializer_pecas = OrdensSerializer(queryset_pecas, many=True)
-        # print(type(serializer_pecas.data[0]))
-        # dict_pecas = dict(serializer_pecas.data)
+
         if serializer_pecas.data:
-            teste = serializer_pecas.data[0]
-            dict_pecas = dict(teste)
-            dict_pecas['Quantidade_Ordem_Carregada'] = queryset_quantidade_carregada['Quantidade_Ordem_Carregada']
-            dict_pecas['Quantidade_Ordem_Recebida'] = queryset_quantidade_recebida['Quantidade_Ordem_Recebida']
-            dict_pecas['leituras_romaneio'] = serializer_leitura.data
-            return dict_pecas
+            lista_pecas = []
+            for i in range(len(serializer_pecas.data)):#print(len(serializer_pecas.data))
+                teste = serializer_pecas.data[i]
+                dict_pecas = dict(teste)
+                queryset_quantidade_carregada = LeiturasCarregamento.objects.filter(romaneio_id=obj.romaneio_id, Ordem_Fabricacao = dict_pecas['Ordem_Fabricacao']).aggregate(
+                    Quantidade_Ordem_Carregada = Sum('Quantidade_Carregada')
+                )
+                queryset_quantidade_recebida = LeiturasRecebimento.objects.filter(romaneio_id=obj.romaneio_id, Ordem_Fabricacao = dict_pecas['Ordem_Fabricacao']).aggregate(
+                    Quantidade_Ordem_Recebida = Sum('Quantidade_Recebida')
+                )
+                dict_pecas['Quantidade_Ordem_Carregada'] = queryset_quantidade_carregada['Quantidade_Ordem_Carregada']
+                dict_pecas['Quantidade_Ordem_Recebida'] = queryset_quantidade_recebida['Quantidade_Ordem_Recebida']
+                queryset_leituras = LeiturasRecebimento.objects.filter(romaneio_id=obj.romaneio_id, Ordem_Fabricacao = dict_pecas['Ordem_Fabricacao'])
+                serializer_leitura = LeituraRecebimentoSerializer(queryset_leituras, many=True)
+                dict_pecas['Leituras_Recebimento'] = serializer_leitura.data
+                lista_pecas.append(dict_pecas)
+            return lista_pecas
         else:
-    # Handle the case when the list is empty
             return None 
-        
-        # if serializer_pecas.is_valid():
-        #     print(type(serializer_pecas.data))
-        
-        # else:
-        #     print(type(serializer_pecas.data))
-        #     print(serializer_pecas.errors)
-        
-        # dict_pecas = dict(serializer_pecas_data)
-        # dict_pecas = {item["key"]: item["value"] for item in serializer_pecas.data}
-        
-
-        ## Fazer um for para iterar apenas os registros de uma ordem especia''l
-
-
-
-  
 
 class AtualizaRomaneioRecebimentoSerializer(serializers.ModelSerializer):
     class Meta:

@@ -169,7 +169,7 @@ class PecasRecebimento(APIView):
  
     def post(self, request, format=None):
         dados = request.data
-        print(type(dados))
+        # print(type(dados))
         if type(dados) is list:
             for item in dados:
                 peca = dw_connect.query_get_ordem(item['Ordem_Fabricacao'])
