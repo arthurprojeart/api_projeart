@@ -166,29 +166,7 @@ class PecasRecebimento(APIView):
         # queryset = Ordens.objects.select_related('LeiturasRecebimento').all()
         serializer = PecasLeiturasRecebimentoSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    # EP 12
-    # def post(self, request, format=None):
-    #     peca = dw_connect.query_get_ordem(request.data.get('Ordem_Fabricacao'))
-    #     peca['romaneio_id'] = request.data.get('romaneio_id')
-    #     peca['Usuario'] = request.data.get('Usuario')
-    #     peca['Quantidade_Recebida'] = request.data.get('Quantidade_Recebida')
-
-    #     query_teste = Ordens.objects.filter(Ordem_Fabricacao=request.data.get('Ordem_Fabricacao')).exists()
-    #     if query_teste:
-    #         pk = request.data.get('Ordem_Fabricacao')
-    #         instance = Ordens.objects.get(pk=pk)
-    #         serializer_ordens = OrdensSerializer(instance, peca)
-    #     else:
-    #         serializer_ordens = OrdensSerializer(data=peca)
-    #     serializer_leituras = LeituraRecebimentoSerializer(data=peca)
-        
-    #     if serializer_ordens.is_valid():
-    #         serializer_ordens.save()
-    #         if serializer_leituras.is_valid():
-    #             serializer_leituras.save()
-    #         return Response({'Ordens': serializer_ordens.data, 'LeiturasRecebimento': serializer_leituras.data}, status=status.HTTP_201_CREATED)
-    #     return Response(serializer_leituras.errors, status=status.HTTP_400_BAD_REQUEST)
+ 
     def post(self, request, format=None):
         dados = request.data
         print(type(dados))
@@ -245,7 +223,7 @@ class PecasRecebimento(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    # EP 14
     def delete(self, request):
         #my_data = Pecas.objects.get(pk=pk)
         dados = request.data
