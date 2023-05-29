@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import timedelta
+import datetime
 from dotenv import load_dotenv  
 import os
 load_dotenv()
@@ -115,11 +116,29 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_TOKEN_TIMEOUT': 86400, # set timeout to 24 hours (86400 seconds)
     'SIMPLE_JWT': {
         'ACCESS_TOKEN_LIFETIME': timedelta(minutes=600),
+        'JWT_EXPIRATION_DELTA': datetime.timedelta(days=2),
+        # 'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
+        'SLIDING_TOKEN_LIFETIME': timedelta(minutes=120),
+        # allow refreshing of tokens
+        'JWT_ALLOW_REFRESH': True,
+        'JWT_VERIFY_EXPIRATION': False,
+        # this is the maximum time AFTER the token was issued that
+        # it can be refreshed.  exprired tokens can't be refreshed.
+        'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
     },
     'JWT_AUTH': {
-        'JWT_EXPIRATION_DELTA': timedelta(minutes=600),
-        # Other JWT configuration options...
+                # how long the original token is valid for
+        'JWT_EXPIRATION_DELTA': datetime.timedelta(days=2),
+        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
+        'SLIDING_TOKEN_LIFETIME': timedelta(minutes=120),
+        # allow refreshing of tokens
+        'JWT_ALLOW_REFRESH': True,
+        'JWT_VERIFY_EXPIRATION': False,
+        # this is the maximum time AFTER the token was issued that
+        # it can be refreshed.  exprired tokens can't be refreshed.
+        'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
     },
+    
 }
 
 AUTHENTICATION_BACKENDS = [

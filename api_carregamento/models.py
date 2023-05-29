@@ -52,9 +52,10 @@ class Pecas(models.Model):
         db_table = 'TbPecasRomaneio'
 
 class Ordens(models.Model):
-    Ordem_Fabricacao = models.IntegerField(primary_key=True)
-    romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='ordens_romaneio')
-    # romaneio_id = models.IntegerField(blank=False)
+    ID_Ordem = models.BigAutoField(primary_key=True)
+    Ordem_Fabricacao = models.IntegerField(blank=False)
+    # romaneio_id = models.ForeignKey(Romaneio, on_delete=models.CASCADE,db_column='romaneio_id', related_name='ordens_romaneio')
+    romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
     Nome_Peca = models.CharField(max_length=200,blank=False)
     ID_Obra = models.IntegerField(blank=False)
@@ -76,10 +77,13 @@ class Ordens(models.Model):
 class LeiturasCarregamento(models.Model):
 
     Leitura_ID = models.BigAutoField(primary_key=True)
-    Ordem_Fabricacao = models.ForeignKey(Ordens, on_delete=models.CASCADE , db_column='Ordem_Fabricacao', related_name='ordensfabricacao')
-    # Ordem_Fabricacao = models.IntegerField(blank=False)
+    # Ordem_Fabricacao = models.ForeignKey(Ordens, on_delete=models.CASCADE , db_column='Ordem_Fabricacao', related_name='ordensfabricacao')
+    Ordem_Fabricacao = models.IntegerField(blank=False)
+    Peso_Unitario = models.FloatField(blank=False)
     romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
+    ID_Trecho = models.IntegerField(blank=False)
+    Nome_Trecho = models.CharField(max_length=200,blank=False)
     Quantidade_Carregada = models.IntegerField(blank=False)
     Data_Carregamento = models.DateTimeField(auto_now_add=True)
 
@@ -90,10 +94,13 @@ class LeiturasCarregamento(models.Model):
 class LeiturasRecebimento(models.Model):
 
     Leitura_ID = models.BigAutoField(primary_key=True)
-    Ordem_Fabricacao = models.ForeignKey(Ordens, on_delete=models.CASCADE , db_column='Ordem_Fabricacao', related_name='Leituras_Recebimento')
-    # Ordem_Fabricacao = models.IntegerField(blank=False)
+    # Ordem_Fabricacao = models.ForeignKey(Ordens, on_delete=models.CASCADE , db_column='Ordem_Fabricacao', related_name='Leituras_Recebimento')
+    Ordem_Fabricacao = models.IntegerField(blank=False)
+    Peso_Unitario = models.FloatField(blank=False)
     romaneio_id = models.IntegerField(blank=False)
     Usuario = models.CharField(max_length=50,blank=False)
+    ID_Trecho = models.IntegerField(blank=False)
+    Nome_Trecho = models.CharField(max_length=200,blank=False)
     Quantidade_Recebida = models.IntegerField(blank=False)
     Data_Recebimento = models.DateTimeField(auto_now_add=True)
 

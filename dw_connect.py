@@ -157,7 +157,7 @@ GROUP BY
         # print(lista_dict)
         # peca_json = df_peca.to_json(orient="records", force_ascii=False)
     else:
-        lista_dict = 'Não Encontrado'
+        lista_dict = 0
     return lista_dict
 
 def query_get_ordem(Ordem_Fabricacao):

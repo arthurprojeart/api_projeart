@@ -42,7 +42,10 @@ class PegarPecas(APIView):
     authentication_classes = [JWTAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
+
         peca = dw_connect.query_get_peca(request.GET.get('ordem_ou_nome'))
+        if peca == 0:
+            return Response([], status=status.HTTP_200_OK)
         for item in peca:
             queryset_quantidade_carregada = LeiturasCarregamento.objects.filter(Ordem_Fabricacao=item['Ordem_Fabricacao']).aggregate(
                 Quantidade_Ordem_Carregada = Sum('Quantidade_Carregada')
@@ -126,12 +129,18 @@ class PecasRomaneio(APIView):
         peca['Usuario'] = request.data.get('Usuario')
         peca['Quantidade_Carregada'] = request.data.get('Quantidade_Carregada')
 
-        query_teste = Ordens.objects.filter(Ordem_Fabricacao=request.data.get('Ordem_Fabricacao')).exists()
+        query_teste = Ordens.objects.filter(
+            Ordem_Fabricacao=request.data.get('Ordem_Fabricacao'),
+            romaneio_id = request.data.get('romaneio_id')
+            ).exists()
+        queryset= Ordens.objects.filter(
+            Ordem_Fabricacao=request.data.get('Ordem_Fabricacao'),
+            romaneio_id = request.data.get('romaneio_id'))
         # print(query_teste)
         
         # print(serializer_leituras)
         if query_teste:
-            pk = request.data.get('Ordem_Fabricacao')
+            pk = queryset.first().ID_Ordem
             instance = Ordens.objects.get(pk=pk)
             serializer_ordens = OrdensSerializer(instance, peca)
         else:
@@ -143,8 +152,11 @@ class PecasRomaneio(APIView):
             serializer_ordens.save()
             if serializer_leituras.is_valid():
                 serializer_leituras.save()
-            return Response({'Ordens': serializer_ordens.data, 'LeiturasCarregamento': serializer_leituras.data}, status=status.HTTP_201_CREATED)
-        return Response(serializer_leituras.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'Ordens': serializer_ordens.data, 'LeiturasCarregamento': serializer_leituras.data}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer_leituras.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer_ordens.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request):
         #my_data = Pecas.objects.get(pk=pk)
@@ -179,14 +191,17 @@ class PecasRecebimento(APIView):
                 peca['Quantidade_Recebida'] = item['Quantidade_Recebida']
 
                 query_teste = Ordens.objects.filter(Ordem_Fabricacao=item['Ordem_Fabricacao']).exists()
+                queryset= Ordens.objects.filter(
+                        Ordem_Fabricacao=request.data.get(item['Ordem_Fabricacao']),
+                        romaneio_id = request.data.get(item['romaneio_id']))
+                        
                 if query_teste:
-                    pk = item['Ordem_Fabricacao']
+                    pk = queryset.first().ID_Ordem
                     instance = Ordens.objects.get(pk=pk)
-                    serializer_ordens = OrdensSerializer(instance, item)
-                    if serializer_ordens.is_valid():
-                        serializer_ordens.save()
+                    serializer_ordens = OrdensSerializer(instance, peca)
                 else:
-                    serializer_ordens = OrdensSerializer(data=item)
+                    serializer_ordens = OrdensSerializer(data=peca)
+
                     if serializer_ordens.is_valid():
                         serializer_ordens.save()
                 serializer_leituras = LeituraRecebimentoSerializer(data=item)
@@ -200,9 +215,11 @@ class PecasRecebimento(APIView):
             peca['Usuario'] = request.data.get('Usuario')
             peca['Quantidade_Recebida'] = request.data.get('Quantidade_Recebida')
             query_teste = Ordens.objects.filter(Ordem_Fabricacao=request.data.get('Ordem_Fabricacao')).exists()
-
+            queryset= Ordens.objects.filter(
+                Ordem_Fabricacao=request.data.get('Ordem_Fabricacao'),
+                romaneio_id = request.data.get('romaneio_id'))
             if query_teste:
-                pk = request.data.get('Ordem_Fabricacao')
+                pk = queryset.first().ID_Ordem
                 instance = Ordens.objects.get(pk=pk)
                 serializer_ordens = OrdensSerializer(instance, peca)
             else:
