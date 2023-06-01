@@ -108,7 +108,22 @@ class RomaneioAtualiza(APIView):
     def delete(self, request, pk):
         my_data = Romaneio.objects.get(pk=pk)
         my_data.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        delete_ordens = Ordens.objects.filter(romaneio_id = pk)
+        delete_ordens.delete()
+        delete_leituras_carregamento = LeiturasCarregamento.objects.filter(romaneio_id = pk)
+        delete_leituras_carregamento.delete()
+        delete_leituras_recebimento = LeiturasRecebimento.objects.filter(romaneio_id = pk)
+        delete_leituras_recebimento.delete()
+        return Response(status=status.HTTP_200_OK)
+    
+    # def delete(self, request):
+    #     #my_data = Pecas.objects.get(pk=pk)
+    #     dados = request.data
+    #     lista_excluir = dados['Leitura_ID']
+    #     for leitura in lista_excluir:   
+    #         queryset = LeiturasRecebimento.objects.filter(Leitura_ID=leitura)
+    #         queryset.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
     
 #LISTA COM PEÇAS DE UM ROMANEIO
 #ENDPOINT 7[POST], 9[GET], 10[DELETE]
@@ -183,6 +198,8 @@ class PecasRecebimento(APIView):
     def post(self, request, format=None):
         dados = request.data
         # print(type(dados))
+        lista_ordens =[]
+        lista_leituras = []
         if type(dados) is list:
             for item in dados:
                 peca = dw_connect.query_get_ordem(item['Ordem_Fabricacao'])
@@ -192,22 +209,42 @@ class PecasRecebimento(APIView):
 
                 query_teste = Ordens.objects.filter(Ordem_Fabricacao=item['Ordem_Fabricacao']).exists()
                 queryset= Ordens.objects.filter(
-                        Ordem_Fabricacao=request.data.get(item['Ordem_Fabricacao']),
-                        romaneio_id = request.data.get(item['romaneio_id']))
-                        
+                        Ordem_Fabricacao = item['Ordem_Fabricacao'],
+                        romaneio_id = item['romaneio_id'])
+                
                 if query_teste:
                     pk = queryset.first().ID_Ordem
                     instance = Ordens.objects.get(pk=pk)
                     serializer_ordens = OrdensSerializer(instance, peca)
+                    if serializer_ordens.is_valid():
+                        lista_ordens.append(serializer_ordens.validated_data)
+
+                    
                 else:
                     serializer_ordens = OrdensSerializer(data=peca)
-
                     if serializer_ordens.is_valid():
-                        serializer_ordens.save()
-                serializer_leituras = LeituraRecebimentoSerializer(data=item)
+                        
+                        lista_ordens.append(serializer_ordens.validated_data)
+                    #     serializer_ordens.save()
+                serializer_leituras = LeituraRecebimentoSerializer(data=peca)
                 if serializer_leituras.is_valid():
-                    serializer_leituras.save()
-            return Response(serializer_leituras.data, status=status.HTTP_201_CREATED)
+                    lista_leituras.append(serializer_leituras.validated_data)
+                else:
+                    return Response(serializer_leituras.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            lista_ordens_salvas = []
+            for ordens in lista_ordens:
+                ordem = Ordens(**ordens)
+                lista_ordens_salvas.append(ordem)
+            Ordens.objects.bulk_create(lista_ordens_salvas)
+
+            lista_leituras_salvas = []
+            for leituras in lista_leituras:
+                leitura = LeiturasRecebimento(**leituras)
+                lista_leituras_salvas.append(leitura)
+            LeiturasRecebimento.objects.bulk_create(lista_leituras_salvas)
+
+            return Response({'leituras':lista_leituras}, status=status.HTTP_201_CREATED)
         
         else:
             peca = dw_connect.query_get_ordem(request.data.get('Ordem_Fabricacao'))
@@ -249,6 +286,7 @@ class PecasRecebimento(APIView):
         for leitura in lista_excluir:   
             queryset = LeiturasRecebimento.objects.filter(Leitura_ID=leitura)
             queryset.delete()
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 from django.db.models import Sum
