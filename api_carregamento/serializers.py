@@ -284,7 +284,7 @@ class OrdensSerializer(serializers.ModelSerializer):
                     
                   'Ordem_Fabricacao',
                   'romaneio_id', 
-                  'Usuario',
+                #   'Usuario',
                   'Nome_Peca',
                   'ID_Obra', 
                   'Nome_Obra', 
