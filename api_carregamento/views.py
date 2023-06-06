@@ -202,6 +202,7 @@ class PecasRecebimento(APIView):
         lista_leituras = []
         if type(dados) is list:
             for item in dados:
+
                 peca = dw_connect.query_get_ordem(item['Ordem_Fabricacao'])
                 peca['romaneio_id'] = item['romaneio_id']
                 peca['Usuario'] = item['Usuario']
@@ -217,13 +218,11 @@ class PecasRecebimento(APIView):
                     instance = Ordens.objects.get(pk=pk)
                     serializer_ordens = OrdensSerializer(instance, peca)
                     if serializer_ordens.is_valid():
-                        lista_ordens.append(serializer_ordens.validated_data)
+                        serializer_ordens.save()
 
-                    
                 else:
                     serializer_ordens = OrdensSerializer(data=peca)
                     if serializer_ordens.is_valid():
-                        
                         lista_ordens.append(serializer_ordens.validated_data)
                     #     serializer_ordens.save()
                 serializer_leituras = LeituraRecebimentoSerializer(data=peca)
