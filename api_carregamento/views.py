@@ -208,7 +208,8 @@ class PecasRecebimento(APIView):
                 peca['Usuario'] = item['Usuario']
                 peca['Quantidade_Recebida'] = item['Quantidade_Recebida']
 
-                query_teste = Ordens.objects.filter(Ordem_Fabricacao=item['Ordem_Fabricacao']).exists()
+                query_teste = Ordens.objects.filter(Ordem_Fabricacao=item['Ordem_Fabricacao'],
+                                                    romaneio_id = item['romaneio_id']).exists()
                 queryset= Ordens.objects.filter(
                         Ordem_Fabricacao = item['Ordem_Fabricacao'],
                         romaneio_id = item['romaneio_id'])
@@ -250,7 +251,8 @@ class PecasRecebimento(APIView):
             peca['romaneio_id'] = request.data.get('romaneio_id')
             peca['Usuario'] = request.data.get('Usuario')
             peca['Quantidade_Recebida'] = request.data.get('Quantidade_Recebida')
-            query_teste = Ordens.objects.filter(Ordem_Fabricacao=request.data.get('Ordem_Fabricacao')).exists()
+            query_teste = Ordens.objects.filter(Ordem_Fabricacao=request.data.get('Ordem_Fabricacao'),
+                                                romaneio_id = request.data.get('romaneio_id')).exists()
             queryset= Ordens.objects.filter(
                 Ordem_Fabricacao=request.data.get('Ordem_Fabricacao'),
                 romaneio_id = request.data.get('romaneio_id'))
